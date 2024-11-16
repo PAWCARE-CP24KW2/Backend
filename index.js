@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const db = require('./db');
+// const apiForPet = require('./routers/pet');
+const agenda = require('./routers/agendas');
 
 const crypto = require('crypto');
 const multer = require('multer');
@@ -115,6 +117,9 @@ app.delete('/api/user/:userId', async (req, res) => {
 // --------------------------------------------------
 
 // -------------------- Pet API ---------------------
+// app.use('/api/pet', apiForPet);
+
+
 // Method: GET
 app.get('/api/pet/my', async (req, res) => {
     // Assuming user ID is available in request (e.g., from session)
@@ -147,6 +152,21 @@ app.get('/api/pet/:petId/calendars', async (req, res) => {
     try {
         const calendars = await db('agenda').where({ user_has_pet_pet_pet_id: petId });
         res.json(calendars);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/pet/:petId/agendas', async (req, res) => {
+    const { petId } = req.params;
+
+    try {
+        // Retrieve the agenda entries from the database
+        const agendas = await db('agenda')
+            .where({ user_has_pet_pet_pet_id: petId })
+            .select('agenda_id', 'agenda_title', 'agenda_message', 'status', 'appointment', 'created_at');
+
+        res.status(200).json(agendas);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -255,6 +275,27 @@ app.post('/api/pet/:petId/calendars', async (req, res) => {
     }
 });
 
+app.post('/api/pet/:petId/agendas', async (req, res) => {
+    const { petId } = req.params;
+    const { event_title, event_description, event_start, status } = req.body;
+
+    try {
+        // Insert the agenda entry into the database
+        await db('agenda').insert({
+            agenda_title: event_title,
+            agenda_message: event_description,
+            appointment: new Date(event_start),
+            status: status || 'Scheduled', // Provide a default value if not provided
+            user_has_pet_pet_pet_id: petId,
+            created_at: new Date()
+        });
+
+        res.status(201).json({ message: 'Agenda entry created successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/api/pet/:petId/documents', upload.single('document'), async (req, res) => {
     const { petId } = req.params;
     const file = req.file;
@@ -303,6 +344,32 @@ app.put('/api/pet/:petId', async (req, res) => {
     }
 });
 
+app.put('/api/agendas/:agendaId', async (req, res) => {
+    const { agendaId } = req.params;
+    const { event_title, event_description, event_start, status } = req.body;
+
+    try {
+        // Update the agenda entry in the database
+        const updatedRows = await db('agenda')
+            .where({ agenda_id: agendaId })
+            .update({
+                agenda_title: event_title,
+                agenda_message: event_description,
+                appointment: new Date(event_start),
+                status: status || 'Scheduled', // Provide a default value if not provided
+                created_at: new Date() // Update the created_at column
+            });
+
+        if (updatedRows) {
+            res.status(200).json({ message: 'Agenda entry updated successfully' });
+        } else {
+            res.status(404).json({ error: 'Agenda entry not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Method: DELETE
 app.delete('/api/pet/:petId', async (req, res) => {
     const { petId } = req.params;
@@ -315,7 +382,29 @@ app.delete('/api/pet/:petId', async (req, res) => {
     }
 });
 
+app.delete('/api/agendas/:agendaId', async (req, res) => {
+    const { agendaId } = req.params;
+
+    try {
+        // Delete the agenda entry from the database
+        const deletedRows = await db('agenda')
+            .where({ agenda_id: agendaId })
+            .del();
+
+        if (deletedRows) {
+            res.status(200).json({ message: 'Agenda entry deleted successfully' });
+        } else {
+            res.status(404).json({ error: 'Agenda entry not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // --------------------------------------------------
+
+// update and delete Agendars
+// app.use('/api/agendas', agenda);
 
 app.listen(8080, () => {
     console.log('Server is running on http://localhost:8080');
