@@ -187,7 +187,13 @@ router.post('/:petId/agendas', async (req, res) => {
             created_at: new Date()
         });
 
-        res.status(201).json({ message: 'Agenda entry created successfully' });
+        // Retrieve the latest inserted entry
+        const newAgenda = await db('agenda')
+            .where({ user_has_pet_pet_pet_id: petId })
+            .orderBy('created_at', 'desc')
+            .first();
+
+        res.status(201).json({ message: `Agenda entry created successfully`, agenda: newAgenda });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
