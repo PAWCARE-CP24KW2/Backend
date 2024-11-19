@@ -30,7 +30,7 @@ exports.createAgenda = async (req, res) => {
             created_at: new Date()
         });
 
-        res.status(201).json({ message: 'Agenda entry created successfully', agenda: newAgenda });
+        res.status(201).json({ ...newAgenda });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -41,7 +41,7 @@ exports.updateAgenda = async (req, res) => {
     const { event_title, event_description, event_start, status } = req.body;
 
     try {
-        const updatedRows = await Agenda.update(agendaId, {
+        const updatedAgenda = await Agenda.update(agendaId, {
             agenda_title: event_title,
             agenda_message: event_description,
             appointment: new Date(event_start),
@@ -49,8 +49,8 @@ exports.updateAgenda = async (req, res) => {
             created_at: new Date()
         });
 
-        if (updatedRows) {
-            res.status(200).json({ message: 'Agenda entry updated successfully' });
+        if (updatedAgenda) {
+            res.status(200).json({ ...updatedAgenda });
         } else {
             res.status(404).json({ error: 'Agenda entry not found' });
         }

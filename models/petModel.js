@@ -46,7 +46,8 @@ exports.import = async (importData) => {
 // };
 
 exports.update = async (petId, petData) => {
-    return db('pet').where({ pet_id: petId }).update(petData);
+    await db('pet').where({ pet_id: petId }).update(petData);
+    return db('pet').where({ pet_id: petId }).first();
 };
 
 exports.deleteUserHasPetByPetId = async (petId) => {

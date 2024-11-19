@@ -10,9 +10,10 @@ exports.create = async (agendaData) => {
 };
 
 exports.update = async (agendaId, agendaData) => {
-    return db('agenda')
+    await db('agenda')
         .where({ agenda_id: agendaId })
         .update(agendaData);
+    return db('agenda').where({ agenda_id: agendaId }).first();
 };
 
 exports.delete = async (agendaId) => {

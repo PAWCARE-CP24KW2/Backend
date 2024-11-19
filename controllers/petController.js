@@ -1,13 +1,14 @@
+require('dotenv').config();
 const Pet = require('../models/petModel');
 const crypto = require('crypto');
 const Minio = require('minio');
 
 const minioClient = new Minio.Client({
-    endPoint: '172.18.0.2', // Replace with your MinIO endpoint
-    port: 9000, // Replace with your MinIO port
-    useSSL: true, // Set to false if not using SSL
-    accessKey: 'nTfIOmCSzNtpO3SvBPUu', // Replace with your MinIO access key
-    secretKey: 'fN1r0xqyQvT2hzsjzgB9r1F2mSVgp48s93FMFjfc' // Replace with your MinIO secret key
+    endPoint: process.env.MINIO_ENDPOINT,
+    port: parseInt(process.env.MINIO_PORT, 10),
+    useSSL: process.env.MINIO_USE_SSL === 'true',
+    accessKey: process.env.MINIO_ACCESS_KEY,
+    secretKey: process.env.MINIO_SECRET_KEY
 });
 
 exports.getMyPets = async (req, res) => {
@@ -55,7 +56,7 @@ exports.addPet = async (req, res) => {
     const { pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth } = req.body;
     try {
         const newPet = await Pet.create({ pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth });
-        res.status(201).json({ message: 'Pet registered successfully', pet: newPet });
+        res.status(201).json({ ...newPet });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -66,7 +67,7 @@ exports.exportPet = async (req, res) => {
     const gencode = crypto.randomBytes(8).toString('hex');
     try {
         await Pet.export({ pet_id: petId, gencode });
-        res.status(201).json({ message: 'Export entry created successfully', gencode });
+        res.status(201).json({ gencode });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -123,23 +124,12 @@ exports.updatePet = async (req, res) => {
     const { pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth } = req.body;
     try {
         const updated = await Pet.update(petId, { pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth });
-        if (updated) res.json({ message: 'Pet updated successfully' });
+        if (updated) res.json({ ...updated });
         else res.status(404).json({ message: 'Pet not found' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
-// exports.deletePet = async (req, res) => {
-//     const { petId } = req.params;
-//     try {
-//         const deleted = await Pet.delete(petId);
-//         if (deleted) res.json({ message: 'Pet deleted successfully' });
-//         else res.status(404).json({ message: 'Pet not found' });
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
 
 exports.deletePet = async (req, res) => {
     const { petId } = req.params;

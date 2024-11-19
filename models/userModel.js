@@ -6,7 +6,7 @@ exports.findById = async (userId) => {
 
 exports.create = async (userData) => {
     const [userId] = await db('user').insert(userData).returning('user_id');
-    return userId;
+    return db('user').where({ user_id: userId }).first();
 };
 
 exports.findByCredentials = async (username, password) => {
@@ -14,7 +14,8 @@ exports.findByCredentials = async (username, password) => {
 };
 
 exports.update = async (userId, userData) => {
-    return db('user').where({ user_id: userId }).update(userData);
+    await db('user').where({ user_id: userId }).update(userData);
+    return db('user').where({ user_id: userId }).first();
 };
 
 exports.delete = async (userId) => {
