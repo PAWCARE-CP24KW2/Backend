@@ -1,5 +1,13 @@
 const db = require('../db');
 
+exports.findAll = async () => {
+    return db('agenda').select('*');
+};
+
+exports.findByPetId = async (petId) => {
+    return db('agenda').where({ user_has_pet_pet_pet_id: petId }).select('*');
+};
+
 exports.findById = async (agendaId) => {
     return db('agenda').where({ agenda_id: agendaId }).first();
 };

@@ -1,5 +1,29 @@
 const Agenda = require('../models/agendaModel');
 
+exports.getAllAgendas = async (req, res) => {
+    try {
+        const agendas = await Agenda.findAll();
+        res.status(200).json(agendas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getAgendasByPetId = async (req, res) => {
+    const { petId } = req.params;
+
+    try {
+        const agendas = await Agenda.findByPetId(petId);
+        if (agendas.length > 0) {
+            res.status(200).json(agendas);
+        } else {
+            res.status(404).json({ error: 'No agenda entries found for this pet' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.getAgenda = async (req, res) => {
     const { agendaId } = req.params;
 
