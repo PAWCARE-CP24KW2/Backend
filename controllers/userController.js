@@ -1,4 +1,9 @@
+const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+
+const generateToken = (user) => {
+    return jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+};
 
 exports.getUser = async (req, res) => {
     const { userId } = req.params;
@@ -14,6 +19,11 @@ exports.getUser = async (req, res) => {
 exports.registerUser = async (req, res) => {
     const { username, password, email, user_firstname, user_lastname, user_phone } = req.body;
     try {
+        const existingUser = await User.findByUsername(username);
+        if (existingUser) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
         const newUser = await User.create({
             username, password, email, user_firstname, user_lastname, user_phone, create_at: new Date()
         });
@@ -27,8 +37,10 @@ exports.loginUser = async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.findByCredentials(username, password);
-        if (user) res.json({ message: 'Login successful', user });
-        else res.status(401).json({ message: 'Invalid username or password' });
+        if (user) {
+            const token = generateToken(user);
+            res.json({ message: 'Login successful', user, token });
+        } else res.status(401).json({ message: 'Invalid username or password' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -38,6 +50,11 @@ exports.updateUser = async (req, res) => {
     const { userId } = req.params;
     const { username, password, email, user_firstname, user_lastname, user_phone } = req.body;
     try {
+        const existingUser = await User.findByUsername(username);
+        if (existingUser && existingUser.user_id !== parseInt(userId)) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
         const updatedUser = await User.update(userId, {
             username, password, email, user_firstname, user_lastname, user_phone
         });
