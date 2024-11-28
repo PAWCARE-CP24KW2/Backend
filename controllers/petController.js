@@ -11,6 +11,15 @@ const minioClient = new Minio.Client({
     secretKey: process.env.MINIO_SECRET_KEY
 });
 
+exports.getAllPets = async (req, res) => {
+    try {
+        const pets = await Pet.findAll();
+        res.status(200).json(pets);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.getMyPets = async (req, res) => {
     const userId = req.query.userId; // For demo purpose; replace with actual user session ID
     try {
@@ -139,6 +148,9 @@ exports.deletePet = async (req, res) => {
 
         // ลบแถวที่เกี่ยวข้องในตาราง exports ก่อน
         await Pet.deleteExportsByPetId(petId);
+
+        // ลบแถวที่เกี่ยวข้องในตาราง agenda ก่อน
+        await Pet.deleteAgendaByPetId(petId);
 
         // ลบแถวในตาราง pet
         const deleted = await Pet.delete(petId);

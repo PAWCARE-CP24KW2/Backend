@@ -1,5 +1,9 @@
 const db = require('../db');
 
+exports.findAll = async () => {
+    return db('pet').select('*');
+};
+
 exports.findByUserId = async (userId) => {
     return db('user_has_pet')
         .join('pet', 'user_has_pet.pet_pet_id', '=', 'pet.pet_id')
@@ -56,6 +60,10 @@ exports.deleteUserHasPetByPetId = async (petId) => {
 
 exports.deleteExportsByPetId = async (petId) => {
     return db('exports').where({ pet_id: petId }).del();
+};
+
+exports.deleteAgendaByPetId = async (petId) => {
+    return db('agenda').where({ user_has_pet_pet_pet_id: petId }).del();
 };
 
 exports.delete = async (petId) => {
