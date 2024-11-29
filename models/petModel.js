@@ -6,8 +6,8 @@ exports.findAll = async () => {
 
 exports.findByUserId = async (userId) => {
     return db('user_has_pet')
-        .join('pet', 'user_has_pet.pet_pet_id', '=', 'pet.pet_id')
-        .where({ user_user_id: userId });
+        .join('pet', 'user_has_pet.pet_id', '=', 'pet.pet_id')
+        .where({ user_id: userId });
 };
 
 exports.findById = async (petId) => {
@@ -16,12 +16,12 @@ exports.findById = async (petId) => {
 
 exports.findUsersByPetId = async (petId) => {
     return db('user_has_pet')
-        .join('user', 'user_has_pet.user_user_id', '=', 'user.user_id')
-        .where({ pet_pet_id: petId });
+        .join('user', 'user_has_pet.user_id', '=', 'user.user_id')
+        .where({ pet_id: petId });
 };
 
 exports.findRecordsByPetId = async (petId) => {
-    return db('agenda').where({ user_has_pet_pet_pet_id: petId });
+    return db('agenda').where({ user_has_pet_id: petId });
 };
 
 exports.create = async (petData) => {
@@ -55,7 +55,7 @@ exports.update = async (petId, petData) => {
 };
 
 exports.deleteUserHasPetByPetId = async (petId) => {
-    return db('user_has_pet').where({ pet_pet_id: petId }).del();
+    return db('user_has_pet').where({ pet_id: petId }).del();
 };
 
 exports.deleteExportsByPetId = async (petId) => {
@@ -63,7 +63,7 @@ exports.deleteExportsByPetId = async (petId) => {
 };
 
 exports.deleteAgendaByPetId = async (petId) => {
-    return db('agenda').where({ user_has_pet_pet_pet_id: petId }).del();
+    return db('agenda').where({ user_has_pet_id: petId }).del();
 };
 
 exports.delete = async (petId) => {

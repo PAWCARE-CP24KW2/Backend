@@ -5,7 +5,7 @@ exports.findAll = async () => {
 };
 
 exports.findByPetId = async (petId) => {
-    return db('agenda').where({ user_has_pet_pet_pet_id: petId }).select('*');
+    return db('agenda').where({ user_has_pet_id: petId }).select('*');
 };
 
 exports.findById = async (agendaId) => {

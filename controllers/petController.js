@@ -62,9 +62,9 @@ exports.getRecordsByPetId = async (req, res) => {
 };
 
 exports.addPet = async (req, res) => {
-    const { pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth } = req.body;
+    const { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
     try {
-        const newPet = await Pet.create({ pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth });
+        const newPet = await Pet.create({ pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
         res.status(201).json({ ...newPet });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -89,7 +89,7 @@ exports.importPet = async (req, res) => {
         if (!exportEntry) {
             return res.status(404).json({ message: 'Invalid gencode' });
         }
-        await Pet.import({ user_user_id: userId, pet_pet_id: exportEntry.pet_id });
+        await Pet.import({ user_id: userId, pet_id: exportEntry.pet_id });
         res.status(201).json({ message: 'Pet added to user\'s list successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -130,9 +130,9 @@ exports.importPet = async (req, res) => {
 
 exports.updatePet = async (req, res) => {
     const { petId } = req.params;
-    const { pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth } = req.body;
+    const { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
     try {
-        const updated = await Pet.update(petId, { pet_export, pet_name, pet_type, pet_breed, weight, date_of_birth });
+        const updated = await Pet.update(petId, { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
         if (updated) res.json({ ...updated });
         else res.status(404).json({ message: 'Pet not found' });
     } catch (error) {
