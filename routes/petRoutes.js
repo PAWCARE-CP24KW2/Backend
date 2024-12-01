@@ -5,7 +5,7 @@ const multer = require('multer');
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-router.get('/pets', petController.getAllPets);
+router.get('/', petController.getAllPets);
 
 router.get('/my', petController.getMyPets);
 router.get('/:petId', petController.getPetById);
