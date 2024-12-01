@@ -160,3 +160,26 @@ exports.deletePet = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.deleteUserPet = async (req, res) => {
+    const { petId, userId } = req.params;
+
+    try {
+        // ลบความสัมพันธ์ระหว่างผู้ใช้และสัตว์เลี้ยงในตาราง user_has_pet
+        const deleted = await Pet.deleteUserHasPet(userId, petId);
+
+        if (deleted) {
+            // ตรวจสอบว่าสัตว์เลี้ยงยังมีผู้ใช้คนอื่นๆ ที่เชื่อมโยงอยู่หรือไม่
+            const remainingUsers = await Pet.findUsersByPetId(petId);
+            if (remainingUsers.length === 0) {
+                // ถ้าไม่มีผู้ใช้คนอื่นๆ ที่เชื่อมโยงอยู่ ให้ลบสัตว์เลี้ยงออกจากตาราง pet
+                await Pet.delete(petId);
+            }
+            res.json({ message: 'User-pet relationship deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'User-pet relationship not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

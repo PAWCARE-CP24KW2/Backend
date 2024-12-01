@@ -21,5 +21,6 @@ router.post('/import', petController.importPet);
 router.put('/:petId', petController.updatePet);
 
 router.delete('/:petId', petController.deletePet);
+router.delete('/:petId/:userId', petController.deleteUserPet);
 
 module.exports = router;

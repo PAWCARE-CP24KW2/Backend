@@ -66,6 +66,10 @@ exports.deleteAgendaByPetId = async (petId) => {
     return db('agenda').where({ user_has_pet_id: petId }).del();
 };
 
+exports.deleteUserHasPet = async (userId, petId) => {
+    return db('user_has_pet').where({ user_id: userId, pet_id: petId }).del();
+};
+
 exports.delete = async (petId) => {
     return db('pet').where({ pet_id: petId }).del();
 };
