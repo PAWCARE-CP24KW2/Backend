@@ -21,7 +21,7 @@ exports.getAllPets = async (req, res) => {
 };
 
 exports.getMyPets = async (req, res) => {
-    const userId = req.query.userId; // For demo purpose; replace with actual user session ID
+    const { userId } = req.params;
     try {
         const pets = await Pet.findByUserId(userId);
         res.json(pets);

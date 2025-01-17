@@ -7,7 +7,7 @@ const upload = multer({ storage: storage });
 
 router.get('/pets', petController.getAllPets);
 
-router.get('/my', petController.getMyPets);
+router.get('/my/:userId', petController.getMyPets);
 router.get('/:petId', petController.getPetById);
 router.get('/:petId/users', petController.getUsersByPetId);
 router.get('/:petId/records', petController.getRecordsByPetId);
