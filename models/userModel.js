@@ -5,6 +5,10 @@ exports.findById = async (userId) => {
     return db('user').where({ user_id: userId }).first();
 };
 
+exports.findAllUser = async () => {
+    return db('user').select('*');
+};
+
 exports.create = async (userData) => {
     userData.password = await bcrypt.hash(userData.password, 10);
     const [userId] = await db('user').insert(userData).returning('user_id');

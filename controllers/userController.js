@@ -1,8 +1,19 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 const generateToken = (user) => {
-    return jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const payload = {
+        userId: user.user_id,
+        username: user.username,
+        email: user.email,
+        user_firstname: user.user_firstname,
+        user_lastname: user.user_lastname,
+        user_phone: user.user_phone
+    };
+    const secret = process.env.JWT_SECRET;
+    const options = { expiresIn: '5min' };
+    return jwt.sign(payload, secret, options);
 };
 
 exports.getUser = async (req, res) => {
@@ -11,6 +22,15 @@ exports.getUser = async (req, res) => {
         const user = await User.findById(userId);
         if (user) res.json(user);
         else res.status(404).json({ message: 'User not found' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const Users = await User.findAllUser();
+        res.status(200).json(Users);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -35,12 +55,31 @@ exports.registerUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
     const { username, password } = req.body;
+    console.log('Login request received:', { username, password });
     try {
         const user = await User.findByCredentials(username, password);
         if (user) {
             const token = generateToken(user);
-            res.json({ message: 'Login successful', user, token });
-        } else res.status(401).json({ message: 'Invalid username or password' });
+            res.json({ message: 'Login successful', token });
+        } else {
+            console.log('Invalid username or password');
+            res.status(401).json({ message: 'Invalid username or password' });
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.refreshToken = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (user) {
+            const token = generateToken(user);
+            res.json({ message: 'Token refreshed', token });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -77,4 +116,4 @@ exports.deleteUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-};
+};  
