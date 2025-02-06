@@ -12,7 +12,7 @@ const generateToken = (user) => {
         user_phone: user.user_phone
     };
     const secret = process.env.JWT_SECRET;
-    const options = { expiresIn: '5min' };
+    const options = { expiresIn: '1h' };
     return jwt.sign(payload, secret, options);
 };
 

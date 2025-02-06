@@ -44,8 +44,8 @@ exports.getPetById = async (req, res) => {
 exports.getUsersByPetId = async (req, res) => {
     const { petId } = req.params;
     try {
-        const users = await Pet.findUsersByPetId(petId);
-        res.json(users);
+        const user = await Pet.findUserByPetId(petId);
+        res.json(user);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -61,40 +61,50 @@ exports.getRecordsByPetId = async (req, res) => {
     }
 };
 
+// exports.addPet = async (req, res) => {
+//     const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+//     try {
+//         const newPet = await Pet.create({ pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
+//         res.status(201).json({ ...newPet });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 exports.addPet = async (req, res) => {
-    const { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+    const user_user_id = req.user.userId; // Extract user ID from the token
     try {
-        const newPet = await Pet.create({ pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
+        const newPet = await Pet.create({ pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_user_id });
         res.status(201).json({ ...newPet });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-exports.exportPet = async (req, res) => {
-    const { petId } = req.params;
-    const gencode = crypto.randomBytes(8).toString('hex');
-    try {
-        await Pet.export({ pet_id: petId, gencode });
-        res.status(201).json({ gencode });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+// exports.exportPet = async (req, res) => {
+//     const { petId } = req.params;
+//     const gencode = crypto.randomBytes(8).toString('hex');
+//     try {
+//         await Pet.export({ pet_id: petId, gencode });
+//         res.status(201).json({ gencode });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
-exports.importPet = async (req, res) => {
-    const { gencode, userId } = req.body;
-    try {
-        const exportEntry = await Pet.findExportByGencode(gencode);
-        if (!exportEntry) {
-            return res.status(404).json({ message: 'Invalid gencode' });
-        }
-        await Pet.import({ user_id: userId, pet_id: exportEntry.pet_id });
-        res.status(201).json({ message: 'Pet added to user\'s list successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+// exports.importPet = async (req, res) => {
+//     const { gencode, userId } = req.body;
+//     try {
+//         const exportEntry = await Pet.findExportByGencode(gencode);
+//         if (!exportEntry) {
+//             return res.status(404).json({ message: 'Invalid gencode' });
+//         }
+//         await Pet.import({ user_id: userId, pet_id: exportEntry.pet_id });
+//         res.status(201).json({ message: 'Pet added to user\'s list successfully' });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 // exports.addCalendar = async (req, res) => {
 //     const { petId } = req.params;

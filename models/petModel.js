@@ -5,19 +5,24 @@ exports.findAll = async () => {
 };
 
 exports.findByUserId = async (userId) => {
-    return db('user_has_pet')
-        .join('pet', 'user_has_pet.pet_id', '=', 'pet.pet_id')
-        .where({ user_id: userId });
+    return db('pet').where({ user_user_id: userId }).select('*');
 };
 
 exports.findById = async (petId) => {
     return db('pet').where({ pet_id: petId }).first();
 };
 
-exports.findUsersByPetId = async (petId) => {
-    return db('user_has_pet')
-        .join('user', 'user_has_pet.user_id', '=', 'user.user_id')
-        .where({ pet_id: petId });
+// exports.findUsersByPetId = async (petId) => {
+//     return db('user_has_pet')
+//         .join('user', 'user_has_pet.user_id', '=', 'user.user_id')
+//         .where({ pet_id: petId });
+// };
+exports.findUserByPetId = async (petId) => {
+    return db('pet')
+        .join('user', 'pet.user_user_id', '=', 'user.user_id')
+        .where({ 'pet.pet_id': petId })
+        .select('user.user_id', 'user.username', 'user.email', 'user.user_firstname', 'user.user_lastname', 'user.user_phone')
+        .first();
 };
 
 exports.findRecordsByPetId = async (petId) => {
@@ -29,17 +34,17 @@ exports.create = async (petData) => {
     return db('pet').where({ pet_id: petId }).first();
 };
 
-exports.export = async (exportData) => {
-    return db('exports').insert({ ...exportData, created_at: new Date() });
-};
+// exports.export = async (exportData) => {
+//     return db('exports').insert({ ...exportData, created_at: new Date() });
+// };
 
-exports.findExportByGencode = async (gencode) => {
-    return db('exports').where({ gencode }).first();
-};
+// exports.findExportByGencode = async (gencode) => {
+//     return db('exports').where({ gencode }).first();
+// };
 
-exports.import = async (importData) => {
-    return db('user_has_pet').insert({ ...importData, created_at: new Date() });
-};
+// exports.import = async (importData) => {
+//     return db('user_has_pet').insert({ ...importData, created_at: new Date() });
+// };
 
 // exports.addCalendar = async (calendarData) => {
 //     return db('calendar').insert({ ...calendarData, created_at: new Date() });
