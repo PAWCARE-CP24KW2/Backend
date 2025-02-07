@@ -10,17 +10,14 @@ router.get('/pets', petController.getAllPets);
 router.get('/my/:userId', petController.getMyPets);
 router.get('/:petId', petController.getPetById);
 router.get('/:petId/users', petController.getUsersByPetId);
-router.get('/:petId/records', petController.getRecordsByPetId);
+// router.get('/:petId/records', petController.getRecordsByPetId);
 
 router.post('/addPet', petController.addPet);
-router.post('/:petId/exports', petController.exportPet);
-router.post('/import', petController.importPet);
 // router.post('/:petId/calendars', petController.addCalendar);
 // router.post('/:petId/documents', upload.single('document'), petController.uploadDocument);
 
 router.put('/:petId', petController.updatePet);
 
 router.delete('/:petId', petController.deletePet);
-router.delete('/:petId/:userId', petController.deleteUserPet);
 
 module.exports = router;

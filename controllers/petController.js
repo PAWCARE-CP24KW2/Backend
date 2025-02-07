@@ -51,61 +51,25 @@ exports.getUsersByPetId = async (req, res) => {
     }
 };
 
-exports.getRecordsByPetId = async (req, res) => {
-    const { petId } = req.params;
-    try {
-        const records = await Pet.findRecordsByPetId(petId);
-        res.json(records);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+// exports.getRecordsByPetId = async (req, res) => {
+//     const { petId } = req.params;
+//     try {
+//         const records = await Pet.findRecordsByPetId(petId);
+//         res.json(records);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 exports.addPet = async (req, res) => {
-    const { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_id  } = req.body;
     try {
-        const newPet = await Pet.create({ pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
+        const newPet = await Pet.create({ pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_id  });
         res.status(201).json({ ...newPet });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
-exports.exportPet = async (req, res) => {
-    const { petId } = req.params;
-    const gencode = crypto.randomBytes(8).toString('hex');
-    try {
-        await Pet.export({ pet_id: petId, gencode });
-        res.status(201).json({ gencode });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-exports.importPet = async (req, res) => {
-    const { gencode, userId } = req.body;
-    try {
-        const exportEntry = await Pet.findExportByGencode(gencode);
-        if (!exportEntry) {
-            return res.status(404).json({ message: 'Invalid gencode' });
-        }
-        await Pet.import({ user_id: userId, pet_id: exportEntry.pet_id });
-        res.status(201).json({ message: 'Pet added to user\'s list successfully' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-// exports.addCalendar = async (req, res) => {
-//     const { petId } = req.params;
-//     const { event_title, event_description, event_start } = req.body;
-//     try {
-//         await Pet.addCalendar({ pet_id: petId, event_title, event_description, event_start });
-//         res.status(201).json({ message: 'Calendar entry created successfully' });
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
 
 // exports.uploadDocument = async (req, res) => {
 //     const { petId } = req.params;
@@ -130,9 +94,9 @@ exports.importPet = async (req, res) => {
 
 exports.updatePet = async (req, res) => {
     const { petId } = req.params;
-    const { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
     try {
-        const updated = await Pet.update(petId, { pet_export, pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
+        const updated = await Pet.update(petId, { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth });
         if (updated) res.json({ ...updated });
         else res.status(404).json({ message: 'Pet not found' });
     } catch (error) {
@@ -143,43 +107,10 @@ exports.updatePet = async (req, res) => {
 exports.deletePet = async (req, res) => {
     const { petId } = req.params;
     try {
-        // ลบแถวที่เกี่ยวข้องในตาราง user_has_pet ก่อน
-        await Pet.deleteUserHasPetByPetId(petId);
-
-        // ลบแถวที่เกี่ยวข้องในตาราง exports ก่อน
-        await Pet.deleteExportsByPetId(petId);
-
-        // ลบแถวที่เกี่ยวข้องในตาราง agenda ก่อน
-        await Pet.deleteAgendaByPetId(petId);
-
-        // ลบแถวในตาราง pet
         const deleted = await Pet.delete(petId);
         if (deleted) res.json({ message: 'Pet deleted successfully' });
         else res.status(404).json({ message: 'Pet not found' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-};
-
-exports.deleteUserPet = async (req, res) => {
-    const { petId, userId } = req.params;
-
-    try {
-        // ลบความสัมพันธ์ระหว่างผู้ใช้และสัตว์เลี้ยงในตาราง user_has_pet
-        const deleted = await Pet.deleteUserHasPet(userId, petId);
-
-        if (deleted) {
-            // ตรวจสอบว่าสัตว์เลี้ยงยังมีผู้ใช้คนอื่นๆ ที่เชื่อมโยงอยู่หรือไม่
-            const remainingUsers = await Pet.findUsersByPetId(petId);
-            if (remainingUsers.length === 0) {
-                // ถ้าไม่มีผู้ใช้คนอื่นๆ ที่เชื่อมโยงอยู่ ให้ลบสัตว์เลี้ยงออกจากตาราง pet
-                await Pet.delete(petId);
-            }
-            res.json({ message: 'User-pet relationship deleted successfully' });
-        } else {
-            res.status(404).json({ message: 'User-pet relationship not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
+}

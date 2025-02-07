@@ -50,7 +50,7 @@ exports.createAgenda = async (req, res) => {
             agenda_message: event_description,
             appointment: new Date(event_start),
             status: status || 'Scheduled',
-            user_has_pet_id: petId,
+            pet_id: petId,
             created_at: new Date()
         });
 
