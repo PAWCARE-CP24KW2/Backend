@@ -47,7 +47,7 @@ exports.loginUser = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-    const { userId } = req.params;
+    const { userId } = req.user;
     const { username, password, email, user_firstname, user_lastname, user_phone } = req.body;
     try {
         const existingUser = await User.findByUsername(username);
@@ -66,7 +66,7 @@ exports.updateUser = async (req, res) => {
 };
 
 exports.deleteUser = async (req, res) => {
-    const { userId } = req.params;
+    const { userId } = req.user;
     try {
         const deletedRows = await User.delete(userId);
         if (deletedRows) {

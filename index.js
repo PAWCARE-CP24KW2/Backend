@@ -4,6 +4,7 @@ const app = express();
 const agendaRoutes = require('./routes/agendaRoutes');
 const petRoutes = require('./routes/petRoutes');
 const userRoutes = require('./routes/userRoutes');
+const imageRoutes = require('./routes/imageRoutes');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use('/api/agendas', agendaRoutes);
 app.use('/api/pet', petRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/image', imageRoutes);
 
 const port = process.env.SERVER_PORT;
 app.listen(port, () => {

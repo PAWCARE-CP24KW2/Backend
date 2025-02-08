@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const agendaController = require('../controllers/agendaController');
+const auth = require('../middleware/auth');
 
 router.get('/', agendaController.getAllAgendas);
-router.get('/pet/:petId', agendaController.getAgendasByPetId);
-router.get('/:agendaId', agendaController.getAgenda);
-router.post('/:petId/agendas', agendaController.createAgenda);
-router.put('/:agendaId', agendaController.updateAgenda);
-router.delete('/:agendaId', agendaController.deleteAgenda);
+
+router.get('/pet/:petId', auth,  agendaController.getAgendasByPetId);
+router.get('/:agendaId', auth, agendaController.getAgenda);
+router.post('/:petId/agendas', auth, agendaController.createAgenda);
+router.put('/:agendaId', auth, agendaController.updateAgenda);
+router.delete('/:agendaId', auth, agendaController.deleteAgenda);
 
 module.exports = router;

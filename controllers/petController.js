@@ -1,15 +1,7 @@
 require('dotenv').config();
 const Pet = require('../models/petModel');
 const crypto = require('crypto');
-const Minio = require('minio');
 
-const minioClient = new Minio.Client({
-    endPoint: process.env.MINIO_ENDPOINT,
-    port: parseInt(process.env.MINIO_PORT, 10),
-    useSSL: process.env.MINIO_USE_SSL === 'true',
-    accessKey: process.env.MINIO_ACCESS_KEY,
-    secretKey: process.env.MINIO_SECRET_KEY
-});
 
 exports.getAllPets = async (req, res) => {
     try {
@@ -21,7 +13,7 @@ exports.getAllPets = async (req, res) => {
 };
 
 exports.getMyPets = async (req, res) => {
-    const { userId } = req.params;
+    const { userId } = req.user;
     try {
         const pets = await Pet.findByUserId(userId);
         res.json(pets);
@@ -62,9 +54,10 @@ exports.getUsersByPetId = async (req, res) => {
 // };
 
 exports.addPet = async (req, res) => {
-    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_id  } = req.body;
+    const { userId } = req.user;
+    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth  } = req.body;
     try {
-        const newPet = await Pet.create({ pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_id  });
+        const newPet = await Pet.create({ pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_id: userId  });
         res.status(201).json({ ...newPet });
     } catch (error) {
         res.status(500).json({ error: error.message });
