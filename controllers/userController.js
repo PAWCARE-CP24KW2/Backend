@@ -5,6 +5,10 @@ const generateToken = (user) => {
     return jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
+const generateRefreshtoken = (user) => {
+    return jwt.sign({ userId: user.user_id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '5h' });
+}
+
 exports.getUser = async (req, res) => {
     const { userId } = req.params;
     try {
@@ -33,13 +37,30 @@ exports.registerUser = async (req, res) => {
     }
 };
 
+exports.refreshToken = async (req, res) => {
+    const { refreshToken } = req.body;
+    try {
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        const user = await User.findById(decoded.userId);
+        if (user) {
+            const token = generateToken(user);
+            res.json({ token });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.loginUser = async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.findByCredentials(username, password);
         if (user) {
             const token = generateToken(user);
-            res.json({ message: 'Login successful', user, token });
+            const refreshToken = generateRefreshtoken(user);
+            res.json({ message: 'Login successful', user, token, refreshToken });
         } else res.status(401).json({ message: 'Invalid username or password' });
     } catch (error) {
         res.status(500).json({ error: error.message });
