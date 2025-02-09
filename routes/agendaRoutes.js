@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 
 router.get('/', agendaController.getAllAgendas);
 
+router.get('/myAgendas', auth, agendaController.getAllAgendasByUserId);
 router.get('/pet/:petId', auth,  agendaController.getAgendasByPetId);
 router.get('/:agendaId', auth, agendaController.getAgenda);
 router.post('/:petId/agendas', auth, agendaController.createAgenda);

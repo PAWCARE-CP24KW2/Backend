@@ -8,7 +8,7 @@ const auth = require('../middleware/auth');
 
 router.get('/pets', petController.getAllPets);
 
-router.get('/my', auth, petController.getMyPets);
+router.get('/myPet', auth, petController.getMyPets);
 router.get('/:petId', auth, petController.getPetById); // อาจจะไม่ต้องมีเพราะบรรทัดที่ 11 ก็ดึงมาให้แล้ว
 router.get('/:petId/users', auth, petController.getUsersByPetId); // อาจจะไม่ต้องมีเหมือนกันนะ แค่คิดๆไว้เฉยๆ
 // router.get('/:petId/records', petController.getRecordsByPetId);

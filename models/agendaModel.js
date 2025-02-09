@@ -1,5 +1,9 @@
 const db = require('../db');
 
+exports.findAllByUserId = async (userId) => {
+    return db('agenda').where({ user_id: userId }).select('*');
+};
+
 exports.findAll = async () => {
     return db('agenda').select('*');
 };

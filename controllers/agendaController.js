@@ -1,5 +1,15 @@
 const Agenda = require('../models/agendaModel');
 
+exports.getAllAgendasByUserId = async (req, res) => {
+    const { userId } = req.user;
+    try {
+        const agendas = await Agenda.findAllByUserId(userId);
+        res.status(200).json(agendas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.getAllAgendas = async (req, res) => {
     try {
         const agendas = await Agenda.findAll();
@@ -41,6 +51,7 @@ exports.getAgenda = async (req, res) => {
 };
 
 exports.createAgenda = async (req, res) => {
+    const { userId } = req.user;
     const { petId } = req.params;
     const { event_title, event_description, event_start, status } = req.body;
 
@@ -51,6 +62,7 @@ exports.createAgenda = async (req, res) => {
             appointment: new Date(event_start),
             status: status || 'Scheduled',
             pet_id: petId,
+            user_id: userId,
             created_at: new Date()
         });
 
