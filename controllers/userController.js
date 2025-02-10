@@ -2,11 +2,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 const generateToken = (user) => {
-    return jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
 const generateRefreshtoken = (user) => {
-    return jwt.sign({ userId: user.user_id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '5h' });
+    return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone }, process.env.JWT_REFRESH_SECRET, { expiresIn: '5h' });
 }
 
 exports.getUser = async (req, res) => {
