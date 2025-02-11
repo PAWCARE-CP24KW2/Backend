@@ -53,7 +53,7 @@ exports.getAgenda = async (req, res) => {
 exports.createAgenda = async (req, res) => {
     const { userId } = req.user;
     const { petId } = req.params;
-    const { event_title, event_description, event_start, status } = req.body;
+    const { event_title, event_description, event_start, status, agenda_category_id } = req.body;
 
     try {
         const newAgenda = await Agenda.create({
@@ -63,6 +63,7 @@ exports.createAgenda = async (req, res) => {
             status: status || 'Scheduled',
             pet_id: petId,
             user_id: userId,
+            agenda_category_id: agenda_category_id,
             created_at: new Date()
         });
 
