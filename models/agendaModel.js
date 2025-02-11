@@ -8,6 +8,10 @@ exports.findAll = async () => {
     return db('agenda').select('*');
 };
 
+exports.findAllCategories = async () => {
+    return db('agenda_category').select('*');
+};
+
 exports.findByPetId = async (petId) => {
     return db('agenda').where({ pet_id: petId }).select('*');
 };

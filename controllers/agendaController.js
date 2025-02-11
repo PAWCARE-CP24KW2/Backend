@@ -19,6 +19,15 @@ exports.getAllAgendas = async (req, res) => {
     }
 };
 
+exports.getAllCategories = async (req, res) => {
+    try {
+        const categories = await Agenda.findAllCategories();
+        res.status(200).json(categories);
+    } catch (error) {
+        res.status(500).json({ error: error.message })
+    }
+};
+
 exports.getAgendasByPetId = async (req, res) => {
     const { petId } = req.params;
 
