@@ -23,10 +23,6 @@ exports.findUsersByPetId = async (petId) => {
         .where({ pet_id: petId });
 };
 
-// exports.uploadDocument = async (documentData) => {
-//     return db('documents').insert({ ...documentData, created_at: new Date() });
-// };
-
 exports.update = async (petId, petData) => {
     await db('pet').where({ pet_id: petId }).update(petData);
     return db('pet').where({ pet_id: petId }).first();

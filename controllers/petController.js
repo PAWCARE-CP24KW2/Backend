@@ -1,6 +1,8 @@
 require('dotenv').config();
 const Pet = require('../models/petModel');
-const crypto = require('crypto');
+const multer = require("multer");
+const minioClient = require("../config/minioClient");
+const upload = multer({ storage: multer.memoryStorage() });
 
 
 exports.getAllPets = async (req, res) => {
@@ -55,35 +57,50 @@ exports.getUsersByPetId = async (req, res) => {
 
 exports.addPet = async (req, res) => {
     const { userId } = req.user;
-    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth  } = req.body;
+    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+    const file = req.file;
+  
     try {
-        const newPet = await Pet.create({ pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth, user_id: userId  });
-        res.status(201).json({ ...newPet });
+      let profilePath = null;
+  
+      if (file) {
+        const bucketName = "profilepet";
+        const objectName = `${Date.now()}-${file.originalname}`;
+  
+        const bucketExists = await minioClient.bucketExists(bucketName);
+        if (!bucketExists) {
+          await minioClient.makeBucket(bucketName, "us-east-1");
+        }
+  
+        await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+          "Content-Type": file.mimetype,
+          "Content-Disposition": "inline",
+        });
+  
+        profilePath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+      }
+  
+      const newPet = await Pet.create({
+        pet_name,
+        pet_type,
+        pet_breed,
+        pet_color,
+        pet_gender,
+        pet_space,
+        pet_neutered,
+        weight,
+        date_of_birth,
+        user_id: userId,
+        profile_path: profilePath,
+      });
+  
+      res.status(201).json({ ...newPet });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
-};
+  };
 
-// exports.uploadDocument = async (req, res) => {
-//     const { petId } = req.params;
-//     const file = req.file;
-//     if (!file) {
-//         return res.status(400).json({ message: 'No file uploaded' });
-//     }
-//     const bucketName = 'documents';
-//     const objectName = `${Date.now()}-${file.originalname}`;
-//     try {
-//         const bucketExists = await minioClient.bucketExists(bucketName);
-//         if (!bucketExists) {
-//             await minioClient.makeBucket(bucketName, 'us-east-1');
-//         }
-//         await minioClient.putObject(bucketName, objectName, file.buffer, file.mimetype);
-//         await Pet.uploadDocument({ pet_id: petId, file_path: `${bucketName}/${objectName}`, file_name: file.originalname });
-//         res.status(201).json({ message: 'File uploaded successfully', file: { bucketName, objectName } });
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
+exports.upload = upload.single('profile_picture');
 
 exports.updatePet = async (req, res) => {
     const { petId } = req.params;

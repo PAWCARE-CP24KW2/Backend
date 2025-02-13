@@ -1,6 +1,7 @@
 const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const Image = require("../models/imageModel");
+const Pet = require("../models/petModel");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -19,16 +20,20 @@ exports.uploadProfilePet = async (req, res) => {
       await minioClient.makeBucket(bucketName, "us-east-1");
     }
 
-    await minioClient.putObject( bucketName, objectName, file.buffer, file.size,
-      {
-        "Content-Type": file.mimetype,
-        "Content-Disposition": "inline",
-      }
-    );
+    await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+      "Content-Type": file.mimetype,
+      "Content-Disposition": "inline",
+    });
 
-    await Image.uploadDocument({ pet_id: petId, file_path: `${bucketName}/${objectName}`, file_name: file.originalname, });
+    await Image.uploadDocument({
+      pet_id: petId,
+      file_path: `${bucketName}/${objectName}`,
+      file_name: file.originalname,
+    });
 
     const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+
+    await Pet.update(petId, { profile_path: fileUrl });
 
     res.status(201).json({
       message: "File uploaded successfully",
