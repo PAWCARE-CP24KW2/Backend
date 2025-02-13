@@ -10,7 +10,4 @@ router.post('/:petId/uploadRegistration', upload.single('file'), auth, imageCont
 router.post('/:petId/uploadMedicalBook', upload.single('file'), auth, imageController.uploadMedicalBook);
 router.post('/:petId/uploadPassportNo', upload.single('file'), auth, imageController.uploadPassportNo);
 
-router.get('/:petId/image/:type', auth, imageController.getImage);
-
-
 module.exports = router;

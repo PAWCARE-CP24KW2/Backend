@@ -143,28 +143,3 @@ exports.uploadPassportNo = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-exports.getImage = async (req, res) => {
-  const { petId, type } = req.params;
-
-  try {
-    const document = await db("documents")
-      .where({ pet_id: petId })
-      .andWhere("file_path", "like", `%${type}%`)
-      .orderBy("created_at", "desc")
-      .first();
-
-    if (!document) {
-      return res.status(404).json({ message: "Image not found" });
-    }
-
-    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${type}/objects/download?preview=true&prefix=${document.file_path.split("/")[1]}&version_id=null`;
-
-    res.status(200).json({
-      message: "Image retrieved successfully",
-      file: { type, file_path: document.file_path, url: fileUrl },
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
