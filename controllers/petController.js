@@ -117,10 +117,17 @@ exports.updatePet = async (req, res) => {
 exports.deletePet = async (req, res) => {
     const { petId } = req.params;
     try {
+        // Delete related documents first
+        await Pet.deleteDocumentsByPetId(petId);
+
+        // Delete related agenda entries
+        await Pet.deleteAgendaByPetId(petId);
+
+        // Then delete the pet
         const deleted = await Pet.delete(petId);
         if (deleted) res.json({ message: 'Pet deleted successfully' });
         else res.status(404).json({ message: 'Pet not found' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-}
+};

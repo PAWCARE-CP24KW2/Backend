@@ -31,3 +31,11 @@ exports.update = async (petId, petData) => {
 exports.delete = async (petId) => {
     return db('pet').where({ pet_id: petId }).del();
 };
+
+exports.deleteDocumentsByPetId = async (petId) => {
+    return db('documents').where({ pet_id: petId }).del();
+};
+
+exports.deleteAgendaByPetId = async (petId) => {
+    return db('agenda').where({ pet_id: petId }).del();
+};

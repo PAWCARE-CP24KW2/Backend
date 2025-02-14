@@ -10,4 +10,7 @@ router.post('/:petId/uploadRegistration', upload.single('file'), auth, imageCont
 router.post('/:petId/uploadMedicalBook', upload.single('file'), auth, imageController.uploadMedicalBook);
 router.post('/:petId/uploadPassportNo', upload.single('file'), auth, imageController.uploadPassportNo);
 
+router.delete('/:petId/deleteProfile', auth, imageController.deleteProfilePet);
+router.delete('/:petId/deleteDocument/:fileType', auth, imageController.deleteDocument);
+
 module.exports = router;
