@@ -200,3 +200,18 @@ exports.deleteDocument = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getFilePath = async (req, res) => {
+  const { petId, fileType } = req.params;
+
+  try {
+    const document = await Image.getFilePathByPetIdAndType(petId, fileType);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    res.status(200).json({ file_path: document.file_path });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

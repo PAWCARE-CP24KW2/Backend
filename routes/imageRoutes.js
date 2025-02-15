@@ -5,6 +5,8 @@ const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const auth = require('../middleware/auth');
 
+router.get('/:petId/getFilePath/:fileType', auth, imageController.getFilePath);
+
 router.post('/:petId/uploadProfile', upload.single('file'), auth, imageController.uploadProfilePet);
 router.post('/:petId/uploadRegistration', upload.single('file'), auth, imageController.uploadRegistration);
 router.post('/:petId/uploadMedicalBook', upload.single('file'), auth, imageController.uploadMedicalBook);
