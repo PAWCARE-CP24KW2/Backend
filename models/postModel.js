@@ -7,7 +7,9 @@ exports.create = async (postData) => {
 };
 
 exports.getAllposts = async () => {
-    return db('post').select('*');
+    return db('post')
+        .join('user', 'post.user_id', 'user.user_id')
+        .select('post.*', 'user.user_firstname','user.user_lastname','user.photo_path');
 };
 
 exports.getPostById = async (postId) => {
