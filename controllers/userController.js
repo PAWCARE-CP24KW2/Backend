@@ -156,7 +156,6 @@ exports.updateUserPhoto = async (req, res) => {
 
             profilePhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
         } else {
-            // ดึงข้อมูลผู้ใช้ปัจจุบันเพื่อใช้ profile_photo_path เดิม
             const currentUser = await User.findById(userId);
             if (currentUser) {
                 profilePhotoPath = currentUser.photo_path;
@@ -177,3 +176,33 @@ exports.updateUserPhoto = async (req, res) => {
 };
 
 exports.upload = upload.single('profile_user');
+
+exports.deleteUserPhoto = async (req, res) => {
+    const { userId } = req.user;
+
+    try {
+        const currentUser = await User.findById(userId);
+        if (currentUser) {
+            const profilePhotoPath = currentUser.photo_path;
+            if (profilePhotoPath) {
+                const bucketName = "profileuser";
+                const objectName = profilePhotoPath.split('prefix=')[1].split('&')[0];
+
+                await minioClient.removeObject(bucketName, objectName);
+
+                const updatedUser = await User.update(userId, { photo_path: null });
+                if (updatedUser) {
+                    res.json({ ...updatedUser });
+                } else {
+                    res.status(404).json({ message: 'User not found' });
+                }
+            } else {
+                res.status(400).json({ message: 'No profile photo to delete' });
+            }
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
