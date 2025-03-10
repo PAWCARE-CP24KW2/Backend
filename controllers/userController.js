@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const multer = require("multer");
+const minioClient = require("../config/minioClient");
+const upload = multer({ storage: multer.memoryStorage() });
 
 const generateToken = (user) => {
     return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
@@ -22,20 +25,50 @@ exports.getUser = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
     const { username, password, email, user_firstname, user_lastname, user_phone } = req.body;
+    const file = req.file;
+
     try {
         const existingUser = await User.findByUsername(username);
         if (existingUser) {
             return res.status(400).json({ message: 'Username already exists' });
         }
 
+        let profilePhotoPath = null;
+
+        if (file) {
+            const bucketName = "profileuser";
+            const objectName = `${Date.now()}-${file.originalname}`;
+
+            const bucketExists = await minioClient.bucketExists(bucketName);
+            if (!bucketExists) {
+                await minioClient.makeBucket(bucketName, "us-east-1");
+            }
+
+            await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+                "Content-Type": file.mimetype,
+                "Content-Disposition": "inline",
+            });
+
+            profilePhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+        }
+
         const newUser = await User.create({
-            username, password, email, user_firstname, user_lastname, user_phone, create_at: new Date()
+            username,
+            password,
+            email,
+            user_firstname,
+            user_lastname,
+            user_phone,
+            photo_path: profilePhotoPath,
+            create_at: new Date()
         });
         res.status(201).json({ ...newUser });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
+
 
 exports.refreshToken = async (req, res) => {
     const { refreshToken } = req.body;
@@ -99,3 +132,48 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.updateUserPhoto = async (req, res) => {
+    const { userId } = req.user;
+    const file = req.file;
+
+    try {
+        let profilePhotoPath = null;
+
+        if (file) {
+            const bucketName = "profileuser";
+            const objectName = `${Date.now()}-${file.originalname}`;
+
+            const bucketExists = await minioClient.bucketExists(bucketName);
+            if (!bucketExists) {
+                await minioClient.makeBucket(bucketName, "us-east-1");
+            }
+
+            await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+                "Content-Type": file.mimetype,
+                "Content-Disposition": "inline",
+            });
+
+            profilePhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+        } else {
+            // ดึงข้อมูลผู้ใช้ปัจจุบันเพื่อใช้ profile_photo_path เดิม
+            const currentUser = await User.findById(userId);
+            if (currentUser) {
+                profilePhotoPath = currentUser.photo_path;
+            } else {
+                return res.status(404).json({ message: 'User not found' });
+            }
+        }
+
+        const updatedUser = await User.update(userId, { photo_path: profilePhotoPath });
+        if (updatedUser) {
+            res.json({ ...updatedUser });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.upload = upload.single('profile_user');

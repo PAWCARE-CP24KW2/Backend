@@ -61,3 +61,7 @@ exports.deleteCommentModel = async (commentId) => {
 exports.getCommentsByPostId = async (postId) => {
     return db('comment').where({ post_id: postId }).select('*');
 };
+
+exports.countAllComments = async (postId) => {
+    return db('comment').count('*').where({ post_id: postId });
+};

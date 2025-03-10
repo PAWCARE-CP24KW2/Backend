@@ -48,14 +48,16 @@ exports.upload = upload.single('post_photo');
 exports.getPost = async (req, res) => {
     try {
         const posts = await postModel.getAllposts();
-        const postsWithLikes = await Promise.all(posts.map(async (post) => {
+        const postsWithDetails = await Promise.all(posts.map(async (post) => {
             const likeCount = await postModel.countAllLike(post.post_id);
+            const commentCount = await postModel.countAllComments(post.post_id);
             return {
                 ...post,
-                likes: likeCount[0]['count(*)']
+                likes: likeCount[0]['count(*)'],
+                comments: commentCount[0]['count(*)']
             };
         }));
-        res.json(postsWithLikes);
+        res.json(postsWithDetails);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
