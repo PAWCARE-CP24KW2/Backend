@@ -11,6 +11,7 @@ router.post('/createPost', auth, upload.single('file'), postController.createPos
 router.get('/getPost', auth, postController.getPost);
 router.put('/updatePost/:postId', auth, upload.single('file'), postController.updatePostCon);
 router.delete('/deletePost/:postId', auth, postController.deletePostCon);
+router.get('/getPostById/:postId', auth, postController.getPostByIdCon);
 
 // like
 router.post('/like/:postId', auth, postController.pushLike);

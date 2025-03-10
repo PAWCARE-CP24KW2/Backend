@@ -63,6 +63,30 @@ exports.getPost = async (req, res) => {
     }
 };
 
+exports.getPostByIdCon = async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const post = await postModel.getPostByIdModel(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        const likeCount = await postModel.countAllLike(post.post_id);
+        const commentCount = await postModel.countAllComments(post.post_id);
+
+        const postWithDetails = {
+            ...post,
+            likes: likeCount[0]['count(*)'],
+            comments: commentCount[0]['count(*)']
+        };
+
+        res.status(200).json(postWithDetails);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.updatePostCon = async (req, res) => {
     const { postId } = req.params;
     const { post_title, post_content } = req.body;

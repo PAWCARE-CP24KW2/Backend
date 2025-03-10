@@ -12,7 +12,7 @@ exports.getAllposts = async () => {
         .select('post.*', 'user.user_firstname','user.user_lastname','user.photo_path');
 };
 
-exports.getPostById = async (postId) => {
+exports.getPostByIdModel = async (postId) => {
     return db('post').where({ post_id: postId }).first();
 };
 
