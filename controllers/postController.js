@@ -94,7 +94,7 @@ exports.updatePostCon = async (req, res) => {
     const { userId } = req.user;
 
     try {
-        const post = await postModel.getPostById(postId);
+        const post = await postModel.getPostByIdModel(postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
@@ -140,7 +140,7 @@ exports.deletePostCon = async (req, res) => {
     const { userId } = req.user;
 
     try {
-        const post = await postModel.getPostById(postId);
+        const post = await postModel.getPostByIdModel(postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
