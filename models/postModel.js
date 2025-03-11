@@ -39,6 +39,12 @@ exports.deleteLike = async (userId, postId) => {
     return db('likes').where({ user_id: userId, post_id: postId }).del();
 };
 
+exports.getUsersWhoLikedPostModel = async (postId) => {
+    return db('likes')
+        .where('likes.post_id', postId)
+        .select('user_id');
+};
+
 // comments
 exports.createCommentModel = async (commentData) => {
     const [commentId] = await db('comment').insert(commentData).returning('comment_id');

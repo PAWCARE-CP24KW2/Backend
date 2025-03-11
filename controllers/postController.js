@@ -135,6 +135,59 @@ exports.updatePostCon = async (req, res) => {
     }
 };
 
+exports.updatePostPhotoCon = async (req, res) => {
+    const { postId } = req.params;
+    const file = req.file;
+    const { userId } = req.user;
+
+    try {
+        const post = await postModel.getPostByIdModel(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        if (post.user_id !== userId) {
+            return res.status(403).json({ error: 'You are not authorized to update this post' });
+        }
+
+        let postPhotoPath = null;
+
+        if (file) {
+            if (post.post_photo_path) {
+                const url = new URL(post.post_photo_path);
+                const objectName = url.searchParams.get('prefix');
+                const bucketName = url.pathname.split('/')[4];
+
+                await minioClient.removeObject(bucketName, objectName);
+            }
+
+            const bucketName = "postphotos";
+            const objectName = `${Date.now()}-${file.originalname}`;
+
+            const bucketExists = await minioClient.bucketExists(bucketName);
+            if (!bucketExists) {
+                await minioClient.makeBucket(bucketName, "us-east-1");
+            }
+
+            await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+                "Content-Type": file.mimetype,
+                "Content-Disposition": "inline",
+            });
+
+            postPhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+        }
+
+        const postData = {
+            post_photo_path: postPhotoPath,
+        };
+
+        const updatedPost = await postModel.updatePostModel(postId, postData);
+        res.status(200).json(updatedPost);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.deletePostCon = async (req, res) => {
     const { postId } = req.params;
     const { userId } = req.user;
@@ -189,6 +242,17 @@ exports.unLike = async (req, res) => {
     try {
         await postModel.deleteLike(userId, postId);
         res.status(200).json({ message: 'Like deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getUsersWhoLikedPost = async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const users = await postModel.getUsersWhoLikedPostModel(postId);
+        res.status(200).json(users);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
