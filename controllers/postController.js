@@ -135,9 +135,8 @@ exports.updatePostCon = async (req, res) => {
     }
 };
 
-exports.updatePostPhotoCon = async (req, res) => {
+exports.deletePostPhotoCon = async (req, res) => {
     const { postId } = req.params;
-    const file = req.file;
     const { userId } = req.user;
 
     try {
@@ -147,38 +146,19 @@ exports.updatePostPhotoCon = async (req, res) => {
         }
 
         if (post.user_id !== userId) {
-            return res.status(403).json({ error: 'You are not authorized to update this post' });
+            return res.status(403).json({ error: 'You are not authorized to delete this post photo' });
         }
 
-        let postPhotoPath = null;
+        if (post.post_photo_path) {
+            const url = new URL(post.post_photo_path);
+            const objectName = url.searchParams.get('prefix');
+            const bucketName = url.pathname.split('/')[4];
 
-        if (file) {
-            if (post.post_photo_path) {
-                const url = new URL(post.post_photo_path);
-                const objectName = url.searchParams.get('prefix');
-                const bucketName = url.pathname.split('/')[4];
-
-                await minioClient.removeObject(bucketName, objectName);
-            }
-
-            const bucketName = "postphotos";
-            const objectName = `${Date.now()}-${file.originalname}`;
-
-            const bucketExists = await minioClient.bucketExists(bucketName);
-            if (!bucketExists) {
-                await minioClient.makeBucket(bucketName, "us-east-1");
-            }
-
-            await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
-                "Content-Type": file.mimetype,
-                "Content-Disposition": "inline",
-            });
-
-            postPhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+            await minioClient.removeObject(bucketName, objectName);
         }
 
         const postData = {
-            post_photo_path: postPhotoPath,
+            post_photo_path: null,
         };
 
         const updatedPost = await postModel.updatePostModel(postId, postData);
@@ -212,6 +192,17 @@ exports.deletePostCon = async (req, res) => {
 
         await postModel.deletePostModel(postId);
         res.status(200).json({ message: 'Post deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getPostsLikedByUser = async (req, res) => {
+    const { userId } = req.user;
+
+    try {
+        const posts = await postModel.getPostsLikedByUserModel(userId);
+        res.status(200).json(posts);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
