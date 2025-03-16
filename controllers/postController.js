@@ -57,8 +57,6 @@ exports.getPost = async (req, res) => {
                 likes: likeCount[0]['count(*)'],
                 comments: commentCount[0]['count(*)'],
                 commentDetails: comments.map(comment => ({
-                    comment_id: comment.comment_id,
-                    comment_content: comment.comment_content,
                     user_firstname: comment.user_firstname,
                     user_lastname: comment.user_lastname,
                     user_photo_path: comment.photo_path
