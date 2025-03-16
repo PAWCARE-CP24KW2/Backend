@@ -11,7 +11,7 @@ router.get('/pets', petController.getAllPets);
 router.get('/myPet', auth, petController.getMyPets);
 router.get('/:petId', auth, petController.getPetById);
 router.get('/:petId/users', auth, petController.getUsersByPetId);
-// router.get('/:petId/records', petController.getRecordsByPetId);
+router.get('/:petId/expiredAgendas', auth, petController.getExpiredAgendasByPetId); // Update this line
 
 router.post('/addPet', auth, upload.single('profile_picture'), petController.addPet );
 

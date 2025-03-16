@@ -45,15 +45,16 @@ exports.getUsersByPetId = async (req, res) => {
     }
 };
 
-// exports.getRecordsByPetId = async (req, res) => {
-//     const { petId } = req.params;
-//     try {
-//         const records = await Pet.findRecordsByPetId(petId);
-//         res.json(records);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
+exports.getExpiredAgendasByPetId = async (req, res) => {
+    const { petId } = req.params;
+
+    try {
+        const expiredAgendas = await Pet.getExpiredAgendasByPetIdModel(petId);
+        res.status(200).json(expiredAgendas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 exports.addPet = async (req, res) => {
     const { userId } = req.user;
