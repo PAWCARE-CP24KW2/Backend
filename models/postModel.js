@@ -32,6 +32,13 @@ exports.getPostsLikedByUserModel = async (userId) => {
         .select('post.*');
 };
 
+exports.getCommentsWithUserDetails = async (postId) => {
+    return db('comment')
+        .join('user', 'comment.user_id', 'user.user_id')
+        .where('comment.post_id', postId)
+        .select('comment.*', 'user.user_firstname', 'user.user_lastname', 'user.photo_path');
+};
+
 // likes
 exports.countAllLike = async (postId) => {
     return db('likes').count('*').where({ post_id: postId });
