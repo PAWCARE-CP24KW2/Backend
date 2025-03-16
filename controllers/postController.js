@@ -190,8 +190,10 @@ exports.deletePostCon = async (req, res) => {
             await minioClient.removeObject(bucketName, objectName);
         }
 
+        await postModel.deleteCommentsByPostId(postId);
+
         await postModel.deletePostModel(postId);
-        res.status(200).json({ message: 'Post deleted successfully' });
+        res.status(200).json({ message: 'Post and associated comments deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

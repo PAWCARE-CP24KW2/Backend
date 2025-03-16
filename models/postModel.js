@@ -32,6 +32,10 @@ exports.getPostsLikedByUserModel = async (userId) => {
         .select('post.*');
 };
 
+exports.deleteCommentsByPostId = async (postId) => {
+    return db('comment').where({ post_id: postId }).del();
+};
+
 // likes
 exports.countAllLike = async (postId) => {
     return db('likes').count('*').where({ post_id: postId });
