@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
+const postModel = require('../models/postModel');
 const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
@@ -121,10 +122,25 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     const { userId } = req.user;
+
     try {
+        const posts = await postModel.getPostsByUserId(userId);
+        for (const post of posts) {
+            if (post.post_photo_path) {
+                const url = new URL(post.post_photo_path);
+                const objectName = url.searchParams.get('prefix');
+                const bucketName = url.pathname.split('/')[4];
+
+                await minioClient.removeObject(bucketName, objectName);
+            }
+            await postModel.deleteCommentsByPostId(post.post_id);
+            await postModel.deletePostModel(post.post_id);
+        }
+
+        // Delete user
         const deletedRows = await User.delete(userId);
         if (deletedRows) {
-            res.status(200).json({ message: 'User deleted successfully' });
+            res.status(200).json({ message: 'User and associated posts deleted successfully' });
         } else {
             res.status(404).json({ error: 'User not found' });
         }

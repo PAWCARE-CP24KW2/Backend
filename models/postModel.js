@@ -89,3 +89,8 @@ exports.getCommentsWithUserDetails = async (postId) => {
         .where('comment.post_id', postId)
         .select('comment.comment_id', 'comment.comment_content', 'comment.create_at', 'comment.update_at', 'comment.post_id', 'comment.user_id', 'user.user_firstname', 'user.user_lastname', 'user.photo_path');
 };
+
+// user
+exports.getPostsByUserId = async (userId) => {
+    return db('post').where({ user_id: userId }).select('*');
+};
