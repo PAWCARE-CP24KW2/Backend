@@ -51,16 +51,10 @@ exports.getPost = async (req, res) => {
         const postsWithDetails = await Promise.all(posts.map(async (post) => {
             const likeCount = await postModel.countAllLike(post.post_id);
             const commentCount = await postModel.countAllComments(post.post_id);
-            const comments = await postModel.getCommentsWithUserDetails(post.post_id);
             return {
                 ...post,
                 likes: likeCount[0]['count(*)'],
-                comments: commentCount[0]['count(*)'],
-                commentDetails: comments.map(comment => ({
-                    user_firstname: comment.user_firstname,
-                    user_lastname: comment.user_lastname,
-                    user_photo_path: comment.photo_path
-                }))
+                comments: commentCount[0]['count(*)']
             };
         }));
         res.json(postsWithDetails);
@@ -326,8 +320,19 @@ exports.getCommentsByPostIdCon = async (req, res) => {
     const { postId } = req.params;
 
     try {
-        const comments = await postModel.getCommentsByPostId(postId);
-        res.status(200).json(comments);
+        const comments = await postModel.getCommentsWithUserDetails(postId);
+        const commentsWithUserDetails = comments.map(comment => ({
+            comment_id: comment.comment_id,
+            comment_content: comment.comment_content,
+            created_at: comment.created_at,
+            updated_at: comment.updated_at,
+            post_id: comment.post_id,
+            user_id: comment.user_id,
+            user_firstname: comment.user_firstname,
+            user_lastname: comment.user_lastname,
+            photo_path: comment.photo_path
+        }));
+        res.status(200).json(commentsWithUserDetails);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
