@@ -324,8 +324,8 @@ exports.getCommentsByPostIdCon = async (req, res) => {
         const commentsWithUserDetails = comments.map(comment => ({
             comment_id: comment.comment_id,
             comment_content: comment.comment_content,
-            created_at: comment.created_at,
-            updated_at: comment.updated_at,
+            created_at: comment.create_at,
+            updated_at: comment.update_at,
             post_id: comment.post_id,
             user_id: comment.user_id,
             user_firstname: comment.user_firstname,
