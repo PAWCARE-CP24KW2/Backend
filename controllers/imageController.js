@@ -25,8 +25,8 @@ exports.uploadProfilePet = async (req, res) => {
       "Content-Disposition": "inline",
     });
 
-    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
-    // const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+    const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+
 
     await Pet.update(petId, { profile_path: fileUrl });
 
@@ -59,7 +59,7 @@ exports.uploadRegistration = async (req, res) => {
       "Content-Disposition": "inline",
     });
 
-    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+    const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
 
     await Image.uploadDocument({
       pet_id: petId,
@@ -96,7 +96,7 @@ exports.uploadMedicalBook = async (req, res) => {
       "Content-Disposition": "inline",
     });
 
-    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+    const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
 
     await Image.uploadDocument({
       pet_id: petId,
@@ -133,7 +133,7 @@ exports.uploadPassportNo = async (req, res) => {
       "Content-Disposition": "inline",
     });
 
-    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+    const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
 
     await Image.uploadDocument({
       pet_id: petId,

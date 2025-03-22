@@ -5,11 +5,11 @@ const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
 
 const generateToken = (user) => {
-    return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone ,photo_path: user.photo_path}, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
 const generateRefreshtoken = (user) => {
-    return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone }, process.env.JWT_REFRESH_SECRET, { expiresIn: '5h' });
+    return jwt.sign({ userId: user.user_id, userName: user.username, email: user.email, firstName: user.user_firstname, lastName: user.user_lastname, phone: user.user_phone ,photo_path: user.photo_path}, process.env.JWT_REFRESH_SECRET, { expiresIn: '5h' });
 }
 
 exports.getUser = async (req, res) => {
@@ -102,7 +102,7 @@ exports.loginUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     const { userId } = req.user;
-    const { username, password, email, user_firstname, user_lastname, user_phone } = req.body;
+    const { username ,email, user_firstname, user_lastname, user_phone } = req.body;
     try {
         const existingUser = await User.findByUsername(username);
         if (existingUser && existingUser.user_id !== parseInt(userId)) {
@@ -110,7 +110,7 @@ exports.updateUser = async (req, res) => {
         }
 
         const updatedUser = await User.update(userId, {
-            username, password, email, user_firstname, user_lastname, user_phone
+             email, user_firstname, user_lastname, user_phone
         });
         if (updatedUser) res.json({ ...updatedUser });
         else res.status(404).json({ message: 'User not found' });
