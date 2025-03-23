@@ -39,3 +39,16 @@ exports.deleteDocumentsByPetId = async (petId) => {
 exports.deleteAgendaByPetId = async (petId) => {
     return db('agenda').where({ pet_id: petId }).del();
 };
+
+exports.create = async (galleryData) => {
+    const [galleryId] = await db('gallery').insert({ ...galleryData, created_at: new Date() }).returning('gallery_id');
+    return db('gallery').where({ gallery_id: galleryId }).first();
+};
+
+exports.findByPetId = async (petId) => {
+    return db('gallery').where({ pet_id: petId });
+};
+
+exports.deleteByPetId = async (petId) => {
+    return db('gallery').where({ pet_id: petId }).del();
+};

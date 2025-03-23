@@ -132,3 +132,41 @@ exports.deletePet = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.uploadGalleryImage = upload.single('gallery_image');
+
+exports.addGalleryImage = async (req, res) => {
+  const { petId } = req.params;
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+  const bucketName = "gallery";
+  const objectName = `${Date.now()}-${file.originalname}`;
+
+  try {
+    const bucketExists = await minioClient.bucketExists(bucketName);
+    if (!bucketExists) {
+      await minioClient.makeBucket(bucketName, "us-east-1");
+    }
+
+    await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+      "Content-Type": file.mimetype,
+      "Content-Disposition": "inline",
+    });
+
+    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+
+    await Gallery.create({
+      pet_id: petId,
+      gallery_path: fileUrl,
+    });
+
+    res.status(201).json({
+      message: "File uploaded successfully",
+      file: { bucketName, objectName, url: fileUrl },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
