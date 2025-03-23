@@ -78,6 +78,7 @@ exports.addPet = async (req, res) => {
         });
   
         profilePath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+        // profilePath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
       }
   
       const newPet = await Pet.create({
