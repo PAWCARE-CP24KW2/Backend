@@ -20,5 +20,7 @@ router.put('/:petId', auth, petController.updatePet);
 router.delete('/:petId', auth, petController.deletePet);
 
 router.post('/gallery/:petId', auth, upload.single('gallery_image'), petController.addGalleryImage);
+router.get('/getGallery/:petId', auth, petController.getGalleryByPetId);
+router.delete('/gallery/:galleryId', auth, petController.deleteGalleryImageById);
 
 module.exports = router;
