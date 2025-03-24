@@ -13,4 +13,6 @@ router.post('/:petId/agendas', auth, agendaController.createAgenda);
 router.put('/:agendaId', auth, agendaController.updateAgenda);
 router.delete('/:agendaId', auth, agendaController.deleteAgenda);
 
+router.get('/expiredAgendas/:petId', auth, agendaController.getExpiredAgendasByPetId);
+
 module.exports = router;
