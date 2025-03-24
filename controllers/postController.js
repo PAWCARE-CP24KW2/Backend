@@ -152,7 +152,7 @@ exports.deletePostPhotoCon = async (req, res) => {
         if (post.post_photo_path) {
             const url = new URL(post.post_photo_path);
             const objectName = url.searchParams.get('prefix');
-            const bucketName = url.pathname.split('/')[4];
+            const bucketName = "postphotos";
 
             await minioClient.removeObject(bucketName, objectName);
         }
@@ -185,7 +185,7 @@ exports.deletePostCon = async (req, res) => {
         if (post.post_photo_path) {
             const url = new URL(post.post_photo_path);
             const objectName = url.searchParams.get('prefix');
-            const bucketName = url.pathname.split('/')[4];
+            const bucketName = "postphotos";
 
             await minioClient.removeObject(bucketName, objectName);
         }
