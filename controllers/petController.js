@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Pet = require('../models/petModel');
+const Gallery = require('../models/galleryModels');
 const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
@@ -45,16 +46,6 @@ exports.getUsersByPetId = async (req, res) => {
     }
 };
 
-// exports.getRecordsByPetId = async (req, res) => {
-//     const { petId } = req.params;
-//     try {
-//         const records = await Pet.findRecordsByPetId(petId);
-//         res.json(records);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
-
 exports.addPet = async (req, res) => {
     const { userId } = req.user;
     const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
@@ -77,8 +68,8 @@ exports.addPet = async (req, res) => {
           "Content-Disposition": "inline",
         });
   
-        profilePath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
-        // profilePath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+        profilePath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+
       }
   
       const newPet = await Pet.create({
@@ -118,13 +109,10 @@ exports.updatePet = async (req, res) => {
 exports.deletePet = async (req, res) => {
     const { petId } = req.params;
     try {
-        // Delete related documents first
         await Pet.deleteDocumentsByPetId(petId);
 
-        // Delete related agenda entries
         await Pet.deleteAgendaByPetId(petId);
 
-        // Then delete the pet
         const deleted = await Pet.delete(petId);
         if (deleted) res.json({ message: 'Pet deleted successfully' });
         else res.status(404).json({ message: 'Pet not found' });
@@ -155,7 +143,7 @@ exports.addGalleryImage = async (req, res) => {
       "Content-Disposition": "inline",
     });
 
-    const fileUrl = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+    const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
 
     await Gallery.create({
       pet_id: petId,
@@ -169,4 +157,42 @@ exports.addGalleryImage = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+};
+
+exports.getGalleryByPetId = async (req, res) => {
+    const { petId } = req.params;
+
+    try {
+        const galleryPaths = await Gallery.getGalleryByPetIdModel(petId);
+        res.status(200).json(galleryPaths);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.deleteGalleryImageById = async (req, res) => {
+    const { galleryId } = req.params;
+
+    try {
+        const galleryImage = await Gallery.getGalleryImageById(galleryId);
+        if (!galleryImage) {
+            return res.status(404).json({ message: 'Gallery image not found' });
+        }
+
+        const galleryPath = galleryImage.gallery_path;
+        if (!galleryPath) {
+            return res.status(400).json({ message: 'Gallery path is missing' });
+        }
+
+        const url = new URL(galleryPath);
+        const objectName = url.searchParams.get('prefix');
+        const bucketName = "gallery";
+
+        await minioClient.removeObject(bucketName, objectName);
+
+        await Gallery.deleteGalleryImageById(galleryId);
+        res.status(200).json({ message: 'Gallery image deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };

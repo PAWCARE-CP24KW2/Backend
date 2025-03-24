@@ -26,7 +26,7 @@ exports.createPost = async (req, res) => {
                 "Content-Disposition": "inline",
             });
 
-            postPhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+            postPhotoPath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
         }
 
         const postData = {
@@ -119,7 +119,7 @@ exports.updatePostCon = async (req, res) => {
                 "Content-Disposition": "inline",
             });
 
-            postPhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+            postPhotoPath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
         }
 
         const postData = {

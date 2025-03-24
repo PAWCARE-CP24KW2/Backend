@@ -49,7 +49,7 @@ exports.registerUser = async (req, res) => {
                 "Content-Disposition": "inline",
             });
 
-            profilePhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+            profilePhotoPath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
         }
 
         const newUser = await User.create({
@@ -154,7 +154,7 @@ exports.updateUserPhoto = async (req, res) => {
                 "Content-Disposition": "inline",
             });
 
-            profilePhotoPath = `http://cp24kw2.sit.kmutt.ac.th:9001/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+            profilePhotoPath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
         } else {
             const currentUser = await User.findById(userId);
             if (currentUser) {
