@@ -1,5 +1,6 @@
 require('dotenv').config();
 const Pet = require('../models/petModel');
+const Gallery = require('../models/galleryModels');
 const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
@@ -144,7 +145,7 @@ exports.addGalleryImage = async (req, res) => {
 
     const fileUrl = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
 
-    await Pet.create({
+    await Gallery.create({
       pet_id: petId,
       gallery_path: fileUrl,
     });
@@ -162,7 +163,7 @@ exports.getGalleryByPetId = async (req, res) => {
     const { petId } = req.params;
 
     try {
-        const galleryPaths = await Pet.getGalleryByPetIdModel(petId);
+        const galleryPaths = await Gallery.getGalleryByPetIdModel(petId);
         res.status(200).json(galleryPaths);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -173,7 +174,7 @@ exports.deleteGalleryImageById = async (req, res) => {
     const { galleryId } = req.params;
 
     try {
-        const galleryImage = await Pet.getGalleryImageById(galleryId);
+        const galleryImage = await Gallery.getGalleryImageById(galleryId);
         if (!galleryImage) {
             return res.status(404).json({ message: 'Gallery image not found' });
         }
@@ -189,7 +190,7 @@ exports.deleteGalleryImageById = async (req, res) => {
 
         await minioClient.removeObject(bucketName, objectName);
 
-        await Pet.deleteGalleryImageById(galleryId);
+        await Gallery.deleteGalleryImageById(galleryId);
         res.status(200).json({ message: 'Gallery image deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
