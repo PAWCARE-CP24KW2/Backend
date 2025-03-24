@@ -25,6 +25,17 @@ exports.deletePostModel = async (postId) => {
     return db('post').where({ post_id: postId }).del();
 };
 
+exports.getPostsLikedByUserModel = async (userId) => {
+    return db('post')
+        .join('likes', 'post.post_id', 'likes.post_id')
+        .where('likes.user_id', userId)
+        .select('post.*');
+};
+
+exports.deleteCommentsByPostId = async (postId) => {
+    return db('comment').where({ post_id: postId }).del();
+};
+
 // likes
 exports.countAllLike = async (postId) => {
     return db('likes').count('*').where({ post_id: postId });
@@ -37,6 +48,12 @@ exports.createLike = async (likeData) => {
 
 exports.deleteLike = async (userId, postId) => {
     return db('likes').where({ user_id: userId, post_id: postId }).del();
+};
+
+exports.getUsersWhoLikedPostModel = async (postId) => {
+    return db('likes')
+        .where('likes.post_id', postId)
+        .select('user_id');
 };
 
 // comments
@@ -64,4 +81,16 @@ exports.getCommentsByPostId = async (postId) => {
 
 exports.countAllComments = async (postId) => {
     return db('comment').count('*').where({ post_id: postId });
+};
+
+exports.getCommentsWithUserDetails = async (postId) => {
+    return db('comment')
+        .join('user', 'comment.user_id', 'user.user_id')
+        .where('comment.post_id', postId)
+        .select('comment.comment_id', 'comment.comment_content', 'comment.create_at', 'comment.update_at', 'comment.post_id', 'comment.user_id', 'user.user_firstname', 'user.user_lastname', 'user.photo_path');
+};
+
+// user
+exports.getPostsByUserId = async (userId) => {
+    return db('post').where({ user_id: userId }).select('*');
 };

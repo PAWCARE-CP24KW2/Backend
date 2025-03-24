@@ -16,6 +16,8 @@ router.get('/getPostById/:postId', auth, postController.getPostByIdCon);
 // like
 router.post('/like/:postId', auth, postController.pushLike);
 router.delete('/unlike/:postId', auth, postController.unLike);
+router.get('/:postId/likes', auth, postController.getUsersWhoLikedPost);
+router.get('/likedPosts', auth, postController.getPostsLikedByUser);
 
 //comment
 router.post('/comment/:postId', auth, postController.createCommentCon);

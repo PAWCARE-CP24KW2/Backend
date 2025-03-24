@@ -135,6 +135,39 @@ exports.updatePostCon = async (req, res) => {
     }
 };
 
+exports.deletePostPhotoCon = async (req, res) => {
+    const { postId } = req.params;
+    const { userId } = req.user;
+
+    try {
+        const post = await postModel.getPostByIdModel(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        if (post.user_id !== userId) {
+            return res.status(403).json({ error: 'You are not authorized to delete this post photo' });
+        }
+
+        if (post.post_photo_path) {
+            const url = new URL(post.post_photo_path);
+            const objectName = url.searchParams.get('prefix');
+            const bucketName = url.pathname.split('/')[4];
+
+            await minioClient.removeObject(bucketName, objectName);
+        }
+
+        const postData = {
+            post_photo_path: null,
+        };
+
+        const updatedPost = await postModel.updatePostModel(postId, postData);
+        res.status(200).json(updatedPost);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.deletePostCon = async (req, res) => {
     const { postId } = req.params;
     const { userId } = req.user;
@@ -157,8 +190,21 @@ exports.deletePostCon = async (req, res) => {
             await minioClient.removeObject(bucketName, objectName);
         }
 
+        await postModel.deleteCommentsByPostId(postId);
+
         await postModel.deletePostModel(postId);
-        res.status(200).json({ message: 'Post deleted successfully' });
+        res.status(200).json({ message: 'Post and associated comments deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getPostsLikedByUser = async (req, res) => {
+    const { userId } = req.user;
+
+    try {
+        const posts = await postModel.getPostsLikedByUserModel(userId);
+        res.status(200).json(posts);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -194,6 +240,17 @@ exports.unLike = async (req, res) => {
     }
 };
 
+exports.getUsersWhoLikedPost = async (req, res) => {
+    const { postId } = req.params;
+
+    try {
+        const users = await postModel.getUsersWhoLikedPostModel(postId);
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // comments
 exports.createCommentCon = async (req, res) => {
     const { userId } = req.user;
@@ -202,7 +259,7 @@ exports.createCommentCon = async (req, res) => {
 
     try {
         const commentData = {
-            commend_content: comment_content,
+            comment_content: comment_content,
             post_id: postId,
             user_id: userId
         };
@@ -230,7 +287,7 @@ exports.updateCommentCon = async (req, res) => {
         }
 
         const commentData = {
-            commend_content: comment_content
+            comment_content: comment_content
         };
 
         const updatedComment = await postModel.updateCommentModel(commentId, commentData);
@@ -265,8 +322,19 @@ exports.getCommentsByPostIdCon = async (req, res) => {
     const { postId } = req.params;
 
     try {
-        const comments = await postModel.getCommentsByPostId(postId);
-        res.status(200).json(comments);
+        const comments = await postModel.getCommentsWithUserDetails(postId);
+        const commentsWithUserDetails = comments.map(comment => ({
+            comment_id: comment.comment_id,
+            comment_content: comment.comment_content,
+            created_at: comment.create_at,
+            updated_at: comment.update_at,
+            post_id: comment.post_id,
+            user_id: comment.user_id,
+            user_firstname: comment.user_firstname,
+            user_lastname: comment.user_lastname,
+            photo_path: comment.photo_path
+        }));
+        res.status(200).json(commentsWithUserDetails);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
