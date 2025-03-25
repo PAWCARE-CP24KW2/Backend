@@ -89,7 +89,7 @@ exports.getPostByIdCon = async (req, res) => {
 
 exports.updatePostCon = async (req, res) => {
     const { postId } = req.params;
-    const { post_title, post_content } = req.body;
+    const { post_title = null , post_content } = req.body;
     const file = req.file;
     const { userId } = req.user;
 
