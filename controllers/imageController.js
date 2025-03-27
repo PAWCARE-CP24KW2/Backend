@@ -2,7 +2,6 @@ const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const Image = require("../models/imageModel");
 const Pet = require("../models/petModel");
-
 const upload = multer({ storage: multer.memoryStorage() });
 
 exports.uploadProfilePet = async (req, res) => {
