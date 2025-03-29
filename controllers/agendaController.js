@@ -120,3 +120,14 @@ exports.deleteAgenda = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getExpiredAgendasByPetId = async (req, res) => {
+    const { petId } = req.params;
+
+    try {
+        const expiredAgendas = await Agenda.findExpiredByPetId(petId);
+        res.status(200).json(expiredAgendas);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

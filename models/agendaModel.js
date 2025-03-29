@@ -37,3 +37,11 @@ exports.delete = async (agendaId) => {
         .where({ agenda_id: agendaId })
         .del();
 };
+
+exports.findExpiredByPetId = async (petId) => {
+    const currentDate = new Date();
+    return db('agenda')
+        .where('pet_id', petId)
+        .andWhere('appointment', '<', currentDate)
+        .select('*');
+};

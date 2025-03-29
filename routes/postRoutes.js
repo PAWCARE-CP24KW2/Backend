@@ -10,12 +10,15 @@ const auth = require('../middleware/auth');
 router.post('/createPost', auth, upload.single('file'), postController.createPost);
 router.get('/getPost', auth, postController.getPost);
 router.put('/updatePost/:postId', auth, upload.single('file'), postController.updatePostCon);
+router.delete('/deletePostPhoto/:postId', auth, postController.deletePostPhotoCon);
 router.delete('/deletePost/:postId', auth, postController.deletePostCon);
 router.get('/getPostById/:postId', auth, postController.getPostByIdCon);
 
 // like
 router.post('/like/:postId', auth, postController.pushLike);
 router.delete('/unlike/:postId', auth, postController.unLike);
+router.get('/:postId/likes', auth, postController.getUsersWhoLikedPost);
+router.get('/likedPosts', auth, postController.getPostsLikedByUser);
 
 //comment
 router.post('/comment/:postId', auth, postController.createCommentCon);

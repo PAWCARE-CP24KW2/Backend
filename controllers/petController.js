@@ -5,7 +5,6 @@ const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
 
-
 exports.getAllPets = async (req, res) => {
     try {
         const pets = await Pet.findAll();

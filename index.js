@@ -16,7 +16,6 @@ app.use('/api/user', userRoutes);
 app.use('/api/image', imageRoutes);
 app.use('/api/post', postRoutes);
 
-
 const port = process.env.SERVER_PORT;
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
