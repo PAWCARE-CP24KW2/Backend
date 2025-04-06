@@ -39,3 +39,18 @@ exports.deleteDocumentsByPetId = async (petId) => {
 exports.deleteAgendaByPetId = async (petId) => {
     return db('agenda').where({ pet_id: petId }).del();
 };
+
+exports.deleteGalleryByPetId = async (petId) => {
+    return db('gallery').where({ pet_id: petId }).del();
+};
+
+exports.findPhoneById = async (userId) => {
+    return db('user')
+        .select('user_phone')
+        .where({ user_id: userId })
+        .first();
+};
+
+exports.updateQRCodePath = async (petId, qrCodeBase64) => {
+    return db('pet').where({ pet_id: petId }).update({ qr_code_base64: qrCodeBase64 });
+};

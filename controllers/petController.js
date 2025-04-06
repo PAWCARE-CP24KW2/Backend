@@ -4,6 +4,8 @@ const Gallery = require('../models/galleryModels');
 const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
+const fs = require("fs");
+const QRCode = require('qrcode');
 
 exports.getAllPets = async (req, res) => {
     try {
@@ -46,50 +48,67 @@ exports.getUsersByPetId = async (req, res) => {
 };
 
 exports.addPet = async (req, res) => {
-    const { userId } = req.user;
-    const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
-    const file = req.file;
-  
-    try {
-      let profilePath = null;
-  
-      if (file) {
-        const bucketName = "profilepet";
-        const objectName = `${Date.now()}-${file.originalname}`;
-  
-        const bucketExists = await minioClient.bucketExists(bucketName);
-        if (!bucketExists) {
-          await minioClient.makeBucket(bucketName, "us-east-1");
-        }
-  
-        await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
-          "Content-Type": file.mimetype,
-          "Content-Disposition": "inline",
-        });
-  
-        profilePath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
+  const { userId } = req.user;
+  const { pet_name, pet_type, pet_breed, pet_color, pet_gender, pet_space, pet_neutered, weight, date_of_birth } = req.body;
+  const file = req.file;
 
+  try {
+      let profilePath = null;
+
+      // อัปโหลดรูปโปรไฟล์สัตว์เลี้ยงไปยัง MinIO
+      if (file) {
+          const bucketName = "profilepet";
+          const objectName = `${Date.now()}-${file.originalname}`;
+
+          const bucketExists = await minioClient.bucketExists(bucketName);
+          if (!bucketExists) {
+              await minioClient.makeBucket(bucketName, "us-east-1");
+          }
+
+          await minioClient.putObject(bucketName, objectName, file.buffer, file.size, {
+              "Content-Type": file.mimetype,
+              "Content-Disposition": "inline",
+          });
+
+          profilePath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
       }
-  
+
+      // เพิ่มสัตว์เลี้ยงในฐานข้อมูล
       const newPet = await Pet.create({
-        pet_name,
-        pet_type,
-        pet_breed,
-        pet_color,
-        pet_gender,
-        pet_space,
-        pet_neutered,
-        weight,
-        date_of_birth,
-        user_id: userId,
-        profile_path: profilePath,
+          pet_name,
+          pet_type,
+          pet_breed,
+          pet_color,
+          pet_gender,
+          pet_space,
+          pet_neutered,
+          weight,
+          date_of_birth,
+          user_id: userId,
+          profile_path: profilePath,
       });
-  
-      res.status(201).json({ ...newPet });
-    } catch (error) {
+
+      // สร้าง URL สำหรับดึงข้อมูลสัตว์เลี้ยง
+      const qrData = `http://localhost:8080/api/pet/qrcode/getpet/${newPet.pet_id}`;
+
+      // สร้าง QR Code ในรูปแบบ Base64
+      const qrCodeBase64 = await QRCode.toDataURL(qrData);
+
+      // บันทึก Base64 ของ QR Code ลงในฐานข้อมูล
+      const updatedRows = await Pet.updateQRCodePath(newPet.pet_id, qrCodeBase64);
+      if (updatedRows === 0) {
+          throw new Error('Failed to update QR Code in the database');
+      }
+
+      // ดึงข้อมูลสัตว์เลี้ยงที่อัปเดตแล้วกลับมา
+      const updatedPet = await Pet.findById(newPet.pet_id);
+
+      res.status(201).json({ message: 'Pet added successfully', pet: updatedPet });
+  } catch (error) {
+      console.error('Error in addPet:', error.message);
       res.status(500).json({ error: error.message });
-    }
-  };
+  }
+};
 
 exports.upload = upload.single('profile_picture');
 
@@ -106,18 +125,48 @@ exports.updatePet = async (req, res) => {
 };
 
 exports.deletePet = async (req, res) => {
-    const { petId } = req.params;
-    try {
-        await Pet.deleteDocumentsByPetId(petId);
+  const { petId } = req.params;
 
-        await Pet.deleteAgendaByPetId(petId);
+  try {
+      // ลบไฟล์ profile_picture ของสัตว์เลี้ยงใน MinIO
+      const pet = await Pet.findById(petId);
+      if (pet && pet.profile_path) {
+          const profileUrl = new URL(pet.profile_path);
+          const profileObjectName = profileUrl.searchParams.get('prefix');
+          const profileBucketName = "profilepet";
 
-        const deleted = await Pet.delete(petId);
-        if (deleted) res.json({ message: 'Pet deleted successfully' });
-        else res.status(404).json({ message: 'Pet not found' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+          await minioClient.removeObject(profileBucketName, profileObjectName);
+      }
+
+      // ลบไฟล์ทั้งหมดใน gallery ของสัตว์เลี้ยงใน MinIO
+      const galleryImages = await Gallery.getGalleryByPetIdModel(petId);
+      for (const image of galleryImages) {
+          const galleryUrl = new URL(image.gallery_path);
+          const galleryObjectName = galleryUrl.searchParams.get('prefix');
+          const galleryBucketName = "gallery";
+
+          await minioClient.removeObject(galleryBucketName, galleryObjectName);
+      }
+
+      // ลบข้อมูลในตาราง documents
+      await Pet.deleteDocumentsByPetId(petId);
+
+      // ลบข้อมูลในตาราง agenda
+      await Pet.deleteAgendaByPetId(petId);
+
+      // ลบข้อมูลในตาราง gallery
+      await Pet.deleteGalleryByPetId(petId);
+
+      // ลบข้อมูลสัตว์เลี้ยง
+      const deleted = await Pet.delete(petId);
+      if (deleted) {
+          res.json({ message: 'Pet deleted successfully' });
+      } else {
+          res.status(404).json({ message: 'Pet not found' });
+      }
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
 };
 
 exports.uploadGalleryImage = upload.single('gallery_image');
@@ -194,4 +243,67 @@ exports.deleteGalleryImageById = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+};
+
+exports.getQRCode = async (req, res) => {
+  const { petId } = req.params;
+
+  try {
+      // ดึงข้อมูลสัตว์เลี้ยงจากฐานข้อมูล
+      const pet = await Pet.findById(petId);
+
+      if (!pet || !pet.qr_code_base64) {
+          return res.status(404).json({ message: 'QR Code not found for this pet' });
+      }
+
+      // ส่ง Base64 ของ QR Code กลับไป
+      res.status(200).json({ qr_code_base64: pet.qr_code_base64 });
+  } catch (error) {
+      console.error('Error in getQRCode:', error.message);
+      res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getPetByQRCode = async (req, res) => {
+  const { petId } = req.params;
+
+  try {
+      // ดึงข้อมูลสัตว์เลี้ยงจากฐานข้อมูล
+      const pet = await Pet.findById(petId);
+
+      if (!pet) {
+          return res.status(404).json({ message: 'Pet not found' });
+      }
+
+      // ดึงเบอร์โทรศัพท์ของผู้สร้างสัตว์เลี้ยง
+      const userPhone = await Pet.findPhoneById(pet.user_id);
+
+      if (!userPhone) {
+          return res.status(404).json({ message: 'Phone number not found for this user' });
+      }
+
+      // ส่งข้อมูลสัตว์เลี้ยงพร้อมเบอร์โทรศัพท์กลับไป
+      res.status(200).json({
+          pet: {
+              pet_id: pet.pet_id,
+              pet_name: pet.pet_name,
+              pet_type: pet.pet_type,
+              pet_breed: pet.pet_breed,
+              pet_color: pet.pet_color,
+              pet_gender: pet.pet_gender,
+              pet_space: pet.pet_space,
+              pet_neutered: pet.pet_neutered,
+              weight: pet.weight,
+              date_of_birth: pet.date_of_birth,
+              profile_path: pet.profile_path,
+              qr_code_base64: pet.qr_code_base64,
+              created_at: pet.created_at,
+              user_id: pet.user_id,
+              owner_phone: userPhone.user_phone,
+          },
+      });
+  } catch (error) {
+      console.error('Error in getPetByQRCode:', error.message);
+      res.status(500).json({ error: error.message });
+  }
 };
