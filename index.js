@@ -6,6 +6,9 @@ const petRoutes = require('./routes/petRoutes');
 const userRoutes = require('./routes/userRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const postRoutes = require('./routes/postRoutes');
+const cors = require('cors');
+
+app.use(cors());
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
