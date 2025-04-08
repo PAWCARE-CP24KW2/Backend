@@ -55,7 +55,6 @@ exports.addPet = async (req, res) => {
   try {
       let profilePath = null;
 
-      // อัปโหลดรูปโปรไฟล์สัตว์เลี้ยงไปยัง MinIO
       if (file) {
           const bucketName = "profilepet";
           const objectName = `${Date.now()}-${file.originalname}`;
@@ -73,7 +72,6 @@ exports.addPet = async (req, res) => {
           profilePath = `https://capstone24.sit.kmutt.ac.th/kw2/minio/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${objectName}&version_id=null`;
       }
 
-      // เพิ่มสัตว์เลี้ยงในฐานข้อมูล
       const newPet = await Pet.create({
           pet_name,
           pet_type,
@@ -88,19 +86,16 @@ exports.addPet = async (req, res) => {
           profile_path: profilePath,
       });
 
-      // สร้าง URL สำหรับดึงข้อมูลสัตว์เลี้ยง
-      const qrData = `http://localhost:8080/api/pet/qrcode/getpet/${newPet.pet_id}`;
+    //   const qrData = `http://localhost:8080/api/pet/qrcode/getpet/${newPet.pet_id}`;
+      const qrData = `https://capstone24.sit.kmutt.ac.th/kw2/api/pet/qrcode/getpet/${newPet.pet_id}`;
 
-      // สร้าง QR Code ในรูปแบบ Base64
       const qrCodeBase64 = await QRCode.toDataURL(qrData);
 
-      // บันทึก Base64 ของ QR Code ลงในฐานข้อมูล
       const updatedRows = await Pet.updateQRCodePath(newPet.pet_id, qrCodeBase64);
       if (updatedRows === 0) {
           throw new Error('Failed to update QR Code in the database');
       }
 
-      // ดึงข้อมูลสัตว์เลี้ยงที่อัปเดตแล้วกลับมา
       const updatedPet = await Pet.findById(newPet.pet_id);
 
       res.status(201).json({ message: 'Pet added successfully', pet: updatedPet });
@@ -128,7 +123,6 @@ exports.deletePet = async (req, res) => {
   const { petId } = req.params;
 
   try {
-      // ลบไฟล์ profile_picture ของสัตว์เลี้ยงใน MinIO
       const pet = await Pet.findById(petId);
       if (pet && pet.profile_path) {
           const profileUrl = new URL(pet.profile_path);
@@ -138,7 +132,6 @@ exports.deletePet = async (req, res) => {
           await minioClient.removeObject(profileBucketName, profileObjectName);
       }
 
-      // ลบไฟล์ทั้งหมดใน gallery ของสัตว์เลี้ยงใน MinIO
       const galleryImages = await Gallery.getGalleryByPetIdModel(petId);
       for (const image of galleryImages) {
           const galleryUrl = new URL(image.gallery_path);
@@ -148,16 +141,12 @@ exports.deletePet = async (req, res) => {
           await minioClient.removeObject(galleryBucketName, galleryObjectName);
       }
 
-      // ลบข้อมูลในตาราง documents
       await Pet.deleteDocumentsByPetId(petId);
 
-      // ลบข้อมูลในตาราง agenda
       await Pet.deleteAgendaByPetId(petId);
 
-      // ลบข้อมูลในตาราง gallery
       await Pet.deleteGalleryByPetId(petId);
 
-      // ลบข้อมูลสัตว์เลี้ยง
       const deleted = await Pet.delete(petId);
       if (deleted) {
           res.json({ message: 'Pet deleted successfully' });
@@ -249,14 +238,12 @@ exports.getQRCode = async (req, res) => {
   const { petId } = req.params;
 
   try {
-      // ดึงข้อมูลสัตว์เลี้ยงจากฐานข้อมูล
       const pet = await Pet.findById(petId);
 
       if (!pet || !pet.qr_code_base64) {
           return res.status(404).json({ message: 'QR Code not found for this pet' });
       }
 
-      // ส่ง Base64 ของ QR Code กลับไป
       res.status(200).json({ qr_code_base64: pet.qr_code_base64 });
   } catch (error) {
       console.error('Error in getQRCode:', error.message);
@@ -268,21 +255,18 @@ exports.getPetByQRCode = async (req, res) => {
   const { petId } = req.params;
 
   try {
-      // ดึงข้อมูลสัตว์เลี้ยงจากฐานข้อมูล
       const pet = await Pet.findById(petId);
 
       if (!pet) {
           return res.status(404).json({ message: 'Pet not found' });
       }
 
-      // ดึงเบอร์โทรศัพท์ของผู้สร้างสัตว์เลี้ยง
       const userPhone = await Pet.findPhoneById(pet.user_id);
 
       if (!userPhone) {
           return res.status(404).json({ message: 'Phone number not found for this user' });
       }
 
-      // ส่งข้อมูลสัตว์เลี้ยงพร้อมเบอร์โทรศัพท์กลับไป
       res.status(200).json({
           pet: {
               pet_id: pet.pet_id,
