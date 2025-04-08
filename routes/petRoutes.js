@@ -16,5 +16,7 @@ router.delete('/:petId', auth, petController.deletePet);
 router.post('/gallery/:petId', auth, upload.single('gallery_image'), petController.addGalleryImage);
 router.get('/gallery/:petId', auth, petController.getGalleryByPetId);
 router.delete('/gallery/:galleryId', auth, petController.deleteGalleryImageById);
+router.get('/qrcode/:petId', auth, petController.getQRCode);
+router.get('/qrcode/getpet/:petId', petController.getPetByQRCode);
 
 module.exports = router;
