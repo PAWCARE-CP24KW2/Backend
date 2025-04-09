@@ -86,8 +86,8 @@ exports.addPet = async (req, res) => {
           profile_path: profilePath,
       });
 
-    //   const qrData = `http://localhost:8080/api/pet/qrcode/getpet/${newPet.pet_id}`;
-      const qrData = `https://capstone24.sit.kmutt.ac.th/kw2/api/pet/qrcode/getpet/${newPet.pet_id}`;
+      const qrData = `http://localhost:5173/pet/${newPet.pet_id}`;
+    //   const qrData = `https://capstone24.sit.kmutt.ac.th/kw2/pet/${newPet.pet_id}`;
 
       const qrCodeBase64 = await QRCode.toDataURL(qrData);
 
