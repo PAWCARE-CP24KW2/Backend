@@ -4,7 +4,6 @@ const Gallery = require('../models/galleryModels');
 const multer = require("multer");
 const minioClient = require("../config/minioClient");
 const upload = multer({ storage: multer.memoryStorage() });
-const fs = require("fs");
 const QRCode = require('qrcode');
 
 exports.getAllPets = async (req, res) => {
@@ -146,6 +145,8 @@ exports.deletePet = async (req, res) => {
       await Pet.deleteAgendaByPetId(petId);
 
       await Pet.deleteGalleryByPetId(petId);
+
+      await Pet.deleteExpensesByPetId(petId);
 
       const deleted = await Pet.delete(petId);
       if (deleted) {
