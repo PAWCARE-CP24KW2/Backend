@@ -6,6 +6,7 @@ const petRoutes = require('./routes/petRoutes');
 const userRoutes = require('./routes/userRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 const postRoutes = require('./routes/postRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
 const cors = require('cors');
 
 app.use(cors());
@@ -18,6 +19,7 @@ app.use('/api/pet', petRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/image', imageRoutes);
 app.use('/api/post', postRoutes);
+app.use('/api/expense', expenseRoutes);
 
 const port = process.env.SERVER_PORT;
 app.listen(port, () => {
