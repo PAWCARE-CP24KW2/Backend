@@ -10,7 +10,14 @@ exports.findByExpenseId = async (expenseId) => {
 };
 
 exports.findByPetId = async (petId) => {
-    return db('expense').where({ pet_id: petId });
+    return db('expense')
+        .join('pet', 'expense.pet_id', 'pet.pet_id')
+        .select(
+            'expense.*',
+            'pet.pet_name',
+            'pet.profile_path'
+        )
+        .where('expense.pet_id', petId);
 };
 
 exports.delete = async (expenseId) => {
