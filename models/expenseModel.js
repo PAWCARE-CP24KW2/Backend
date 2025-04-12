@@ -6,7 +6,15 @@ exports.create = async (expenseData) => {
 };
 
 exports.findByExpenseId = async (expenseId) => {
-    return db('expense').where({ expense_id: expenseId }).first();
+    return db('expense')
+        .join('pet', 'expense.pet_id', 'pet.pet_id')
+        .select(
+            'expense.*',
+            'pet.pet_name',
+            'pet.profile_path'
+        )
+        .where('expense.expense_id', expenseId)
+        .first();
 };
 
 exports.findByPetId = async (petId) => {
