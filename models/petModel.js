@@ -44,6 +44,10 @@ exports.deleteGalleryByPetId = async (petId) => {
     return db('gallery').where({ pet_id: petId }).del();
 };
 
+exports.deleteExpensesByPetId = async (petId) => {
+    return db('expense').where({ pet_id: petId }).del();
+};
+
 exports.findPhoneById = async (userId) => {
     return db('user')
         .select('user_phone')

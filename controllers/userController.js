@@ -121,10 +121,28 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     const { userId } = req.user;
+
     try {
-        const deletedRows = await User.delete(userId);
+        const currentUser = await User.findById(userId);
+        if (!currentUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const profilePhotoPath = currentUser.photo_path;
+        if (profilePhotoPath) {
+            const bucketName = "profileuser";
+            const objectName = profilePhotoPath.split('prefix=')[1].split('&')[0];
+
+            try {
+                await minioClient.removeObject(bucketName, objectName);
+            } catch (error) {
+                console.error('Error deleting profile photo from MinIO:', error.message);
+            }
+        }
+
+        const deletedRows = await User.deleteUserWithDependencies(userId);
         if (deletedRows) {
-            res.status(200).json({ message: 'User deleted successfully' });
+            res.status(200).json({ message: 'User and all related data deleted successfully' });
         } else {
             res.status(404).json({ error: 'User not found' });
         }

@@ -34,3 +34,17 @@ exports.update = async (userId, userData) => {
 exports.delete = async (userId) => {
     return db('user').where({ user_id: userId }).del();
 };
+
+exports.deleteUserWithDependencies = async (userId) => {
+    const posts = await db('post').where({ user_id: userId });
+    for (const post of posts) {
+        await db('comment').where({ post_id: post.post_id }).del();
+    }
+    await db('post').where({ user_id: userId }).del();
+    const pets = await db('pet').where({ user_id: userId });
+    for (const pet of pets) {
+        await db('expense').where({ pet_id: pet.pet_id }).del();
+    }
+    await db('pet').where({ user_id: userId }).del();
+    return db('user').where({ user_id: userId }).del();
+};
