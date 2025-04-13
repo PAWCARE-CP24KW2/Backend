@@ -28,6 +28,18 @@ exports.findByPetId = async (petId) => {
         .where('expense.pet_id', petId);
 };
 
+exports.findByUserId = async (userId) => {
+    return db('expense')
+        .join('pet', 'expense.pet_id', 'pet.pet_id')
+        .join('user', 'pet.user_id', 'user.user_id')
+        .select(
+            'expense.*',
+            'pet.pet_name',
+            'pet.profile_path'
+        )
+        .where('user.user_id', userId);
+};
+
 exports.delete = async (expenseId) => {
     return db('expense').where({ expense_id: expenseId }).del();
 };

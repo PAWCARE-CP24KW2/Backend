@@ -33,6 +33,16 @@ exports.getExpensesByPetId = async (req, res) => {
     }
 };
 
+exports.getExpensesByUserId = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const expenses = await expenseModel.findByUserId(userId);
+        res.status(200).json(expenses);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve expenses', details: error.message });
+    }
+};
+
 exports.deleteExpense = async (req, res) => {
     try {
         const { expenseId } = req.params;
